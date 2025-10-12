@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace TutorLiveMentor.Models
 {
@@ -27,8 +29,17 @@ namespace TutorLiveMentor.Models
         public string Password { get; set; }
 
         public string SelectedSubject { get; set; } = string.Empty;
-        public int? AssignedSubjectId { get; set; }
-        public virtual AssignedSubject AssignedSubject { get; set; }
 
+        // Add the new collection for multiple enrollments
+        public virtual ICollection<StudentEnrollment> Enrollments { get; set; } = new List<StudentEnrollment>();
+
+        // Helper method to get enrolled subjects as a formatted string
+        public string GetEnrolledSubjectsDisplay()
+        {
+            if (Enrollments == null || !Enrollments.Any())
+                return "No subjects enrolled";
+
+            return string.Join(", ", Enrollments.Select(e => $"{e.AssignedSubject.Subject.Name} ({e.AssignedSubject.Faculty.Name})"));
+        }
     }
 }

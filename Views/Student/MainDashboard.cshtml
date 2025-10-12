@@ -1,61 +1,61 @@
 ﻿@{
-    ViewBag.Title = "Student Main Dashboard";
+    ViewData["Title"] = "Student Main Dashboard";
 }
 
 <style>
-    .big-menu {
-        display: flex;
-        gap: 50px;
-        justify-content: center;
-        margin-top: 70px;
+    .dashboard-card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 15px;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        transition: 0.3s;
+        background-color: white;
     }
 
-    .menu-card {
-        width: 240px;
-        height: 320px;
-        background: #f8faff;
-        border-radius: 30px;
-        box-shadow: 0 8px 22px #ccd;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2em;
-        text-decoration: none;
-        color: #222;
-        transition: box-shadow .2s;
+    .dashboard-card:hover {
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
     }
 
-        .menu-card:hover {
-            box-shadow: 0 16px 44px #aab;
-            background: #e3eeff;
-        }
-
-    .icon-circle {
-        width: 100px;
-        height: 100px;
-        background: #c2c7d6;
-        border-radius: 50%;
-        margin-bottom: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3.5em;
+    .card-icon {
+        font-size: 48px; /* Using a generic size */
+        margin-bottom: 15px;
     }
 </style>
 
-<h2 style="text-align:center;">Welcome, Student!</h2>
-<div class="big-menu">
-    <a href="/Student/Dashboard" class="menu-card">
-        <div class="icon-circle">👤</div>
-        <div>Student Dashboard</div>
-    </a>
-    <a href="/Student/SelectFaculty" class="menu-card">
-        <div class="icon-circle">🎓</div>
-        <div>Select Faculty</div>
-    </a>
-    <a href="/Student/AssignedFaculty" class="menu-card">
-        <div class="icon-circle">🧑‍🏫</div>
-        <div>Assigned Faculty</div>
-    </a>
+<div class="text-center">
+    <h2 class="display-5">Welcome, Student!</h2>
+</div>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        
+        <div class="col-md-3">
+            <div class="dashboard-card text-center">
+                <div class="card-icon">👤</div>
+                <h5 class="card-title">Student Dashboard</h5>
+                <p class="card-text">View your profile and enrollment status.</p>
+                <a asp-controller="Student" asp-action="Dashboard" class="btn btn-primary stretched-link">View Profile</a>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card text-center">
+                <div class="card-icon">🎓</div>
+                <h5 class="card-title">Select Subject</h5>
+                <p class="card-text">Choose a subject and faculty for the semester.</p>
+                <a asp-controller="Student" asp-action="Dashboard" class="btn btn-primary stretched-link">Select Now</a>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card text-center">
+                <div class="card-icon">👩‍🏫</div>
+                <h5 class="card-title">Assigned Faculty</h5>
+                <p class="card-text">See details about your assigned faculty.</p>
+                <a asp-controller="Student" asp-action="Dashboard" class="btn btn-primary stretched-link">View Details</a>
+            </div>
+        </div>
+
+    </div>
 </div>

@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace TutorLiveMentor.Migrations
+namespace TutorLiveMentor10.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdatedDepartmentAndSubjectNavigation : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

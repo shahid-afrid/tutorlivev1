@@ -35,32 +35,31 @@ namespace TutorLiveMentor.Controllers
                 return View(model);
             }
 
-            TempData["FacultyId"] = faculty.FacultyId;
+            // Store faculty ID in session
+            HttpContext.Session.SetInt32("FacultyId", faculty.FacultyId);
             return RedirectToAction("Dashboard");
         }
 
         [HttpGet]
         public IActionResult Dashboard()
         {
-            if (TempData["FacultyId"] == null) return RedirectToAction("Login");
+            var facultyId = HttpContext.Session.GetInt32("FacultyId");
+            if (facultyId == null) return RedirectToAction("Login");
 
-            int facultyId = (int)TempData["FacultyId"];
             var faculty = _context.Faculties
                 .Include(f => f.AssignedSubjects)
-                .FirstOrDefault(f => f.FacultyId == facultyId);
+                .FirstOrDefault(f => f.FacultyId == facultyId.Value);
 
-            TempData.Keep("FacultyId");
             return View(faculty);
         }
 
         [HttpGet]
         public IActionResult Profile()
         {
-            if (TempData["FacultyId"] == null) return RedirectToAction("Login");
+            var facultyId = HttpContext.Session.GetInt32("FacultyId");
+            if (facultyId == null) return RedirectToAction("Login");
 
-            int facultyId = (int)TempData["FacultyId"];
-            var faculty = _context.Faculties.FirstOrDefault(f => f.FacultyId == facultyId);
-            TempData.Keep("FacultyId");
+            var faculty = _context.Faculties.FirstOrDefault(f => f.FacultyId == facultyId.Value);
             return View(faculty);
         }
 
@@ -68,27 +67,34 @@ namespace TutorLiveMentor.Controllers
         [HttpGet]
         public IActionResult EditProfile()
         {
-            if (TempData["FacultyId"] == null) return RedirectToAction("Login");
-            int facultyId = (int)TempData["FacultyId"];
-            var faculty = _context.Faculties.FirstOrDefault(f => f.FacultyId == facultyId);
-            TempData.Keep("FacultyId");
+            var facultyId = HttpContext.Session.GetInt32("FacultyId");
+            if (facultyId == null) return RedirectToAction("Login");
+
+            var faculty = _context.Faculties.FirstOrDefault(f => f.FacultyId == facultyId.Value);
             return View(faculty);
         }
 
         [HttpPost]
         public IActionResult EditProfile(Faculty model)
         {
+            var facultyId = HttpContext.Session.GetInt32("FacultyId");
+            if (facultyId == null) return RedirectToAction("Login");
+
             if (!ModelState.IsValid)
             {
-                TempData.Keep("FacultyId");
                 return View(model);
             }
 
             var faculty = _context.Faculties.FirstOrDefault(f => f.FacultyId == model.FacultyId);
             if (faculty == null)
             {
-                TempData.Keep("FacultyId");
                 return RedirectToAction("Profile");
+            }
+
+            // Ensure the model ID matches the logged-in faculty's ID
+            if (model.FacultyId != facultyId.Value)
+            {
+                return BadRequest();
             }
 
             // Update properties
@@ -97,32 +103,31 @@ namespace TutorLiveMentor.Controllers
             // Add other properties you want editable...
 
             _context.SaveChanges();
-            TempData.Keep("FacultyId");
             return RedirectToAction("Profile");
         }
 
         [HttpGet]
         public IActionResult AssignedSubjects()
         {
-            if (TempData["FacultyId"] == null) return RedirectToAction("Login");
-            int facultyId = (int)TempData["FacultyId"];
+            var facultyId = HttpContext.Session.GetInt32("FacultyId");
+            if (facultyId == null) return RedirectToAction("Login");
+
             var subjects = _context.AssignedSubjects
                 .Include(a => a.Subject)
-                .Where(x => x.FacultyId == facultyId)
+                .Where(x => x.FacultyId == facultyId.Value)
                 .ToList();
-            TempData.Keep("FacultyId");
             return View(subjects);
         }
 
         [HttpGet]
         public IActionResult StudentsEnrolled(string subject = null)
         {
-            if (TempData["FacultyId"] == null) return RedirectToAction("Login");
+            var facultyId = HttpContext.Session.GetInt32("FacultyId");
+            if (facultyId == null) return RedirectToAction("Login");
 
-            int facultyId = (int)TempData["FacultyId"];
             var subjects = _context.AssignedSubjects
                 .Include(a => a.Subject)
-                .Where(x => x.FacultyId == facultyId)
+                .Where(x => x.FacultyId == facultyId.Value)
                 .ToList();
 
             ViewBag.Subjects = subjects;
@@ -131,18 +136,31 @@ namespace TutorLiveMentor.Controllers
             List<Student> students = new List<Student>();
             if (!string.IsNullOrEmpty(subject))
             {
-                var validSubjectYears = subjects
+                // Get the assigned subject IDs for this faculty and subject name
+                var assignedSubjectIds = subjects
                     .Where(subj => subj.Subject.Name == subject)
-                    .Select(subj => subj.Year.ToString())
+                    .Select(subj => subj.AssignedSubjectId)
                     .ToList();
 
-                students = _context.Students
-                    .Where(s => s.SelectedSubject == subject && validSubjectYears.Contains(s.Year))
+                // Get students enrolled in any of these assigned subjects
+                students = _context.StudentEnrollments
+                    .Include(se => se.Student)
+                    .Include(se => se.AssignedSubject)
+                        .ThenInclude(a => a.Subject)
+                    .Where(se => assignedSubjectIds.Contains(se.AssignedSubjectId))
+                    .Select(se => se.Student)
+                    .Distinct()
                     .ToList();
             }
 
-            TempData.Keep("FacultyId");
             return View(students);
+        }
+
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
         }
     }
 }

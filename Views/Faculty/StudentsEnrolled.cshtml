@@ -10,38 +10,57 @@
 
 <form method="get">
     <label for="subject">Select subject:</label>
-    <select id="subject" name="subject" onchange="this.form.submit()">
+    <select id="subject" name="subject" onchange="this.form.submit()" class="form-control" style="width: auto; display: inline-block;">
         <option value="">--Select Subject--</option>
         @if (facultySubjects != null)
         {
             foreach (var s in facultySubjects)
             {
                 string sel = selectedSubject == s.Subject.Name ? "selected" : "";
-                @:<option value="@s.Subject.Name" @sel>@s.Year - @s.Subject.Name</option>
+                @:<option value="@s.Subject.Name" @sel>@s.Year - @s.Subject.Name (@s.SelectedCount students)</option>
             }
         }
     </select>
 </form>
 
 @if(enrolledStudents != null && enrolledStudents.Count > 0) {
-    <table border="1" cellpadding="8" style="margin-top:24px;">
-        <tr>
-            <th>Name of the Student</th>
-            <th>Regd No</th>
-            <th>Selected Subject</th>
-            <th>Year</th>
-        </tr>
-        @foreach(var student in enrolledStudents) {
-            <tr>
-                <td>@student.FullName</td>
-                <td>@student.RegdNumber</td>
-                <td>@student.SelectedSubject</td>
-                <td>@student.Year</td>
-            </tr>
-        }
-    </table>
-} else if(selectedSubject != null && selectedSubject != "") {
-    <p>No students enrolled for this subject.</p>
+    <div style="margin-top: 24px;">
+        <h4>Students enrolled in @selectedSubject (@enrolledStudents.Count students)</h4>
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>S.No</th>
+                    <th>Name of the Student</th>
+                    <th>Registration Number</th>
+                    <th>Year</th>
+                    <th>Department</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{int serialNo = 1;}
+                @foreach(var student in enrolledStudents) {
+                    <tr>
+                        <td>@serialNo</td>
+                        <td>@student.FullName</td>
+                        <td>@student.RegdNumber</td>
+                        <td>@student.Year</td>
+                        <td>@student.Department</td>
+                        <td>@student.Email</td>
+                    </tr>
+                    serialNo++;
+                }
+            </tbody>
+        </table>
+    </div>
+} else if(!string.IsNullOrEmpty(selectedSubject)) {
+    <div class="alert alert-info" style="margin-top: 24px;">
+        <h4>No students enrolled for @selectedSubject</h4>
+        <p>Students haven't enrolled in this subject yet, or they may have unenrolled.</p>
+    </div>
 } else {
-    <p>Select a subject above to view enrolled students.</p>
+    <div class="alert alert-secondary" style="margin-top: 24px;">
+        <p><strong>Select a subject above to view enrolled students.</strong></p>
+        <p>You can see all students who have enrolled in your subjects.</p>
+    </div>
 }

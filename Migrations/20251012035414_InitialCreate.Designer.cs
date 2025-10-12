@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TutorLiveMentor.Models;
 
@@ -10,9 +11,11 @@ using TutorLiveMentor.Models;
 namespace TutorLiveMentor10.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251012035414_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,7 +34,7 @@ namespace TutorLiveMentor10.Migrations
 
                     b.Property<string>("Department")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("FacultyId")
                         .HasColumnType("int");
@@ -49,7 +52,7 @@ namespace TutorLiveMentor10.Migrations
 
                     b.HasIndex("FacultyId");
 
-                    b.HasIndex("SubjectId");
+                    b.HasIndex("SubjectId", "Department", "Year");
 
                     b.ToTable("AssignedSubjects");
                 });
@@ -87,9 +90,12 @@ namespace TutorLiveMentor10.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AssignedSubjectId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Department")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -114,29 +120,15 @@ namespace TutorLiveMentor10.Migrations
 
                     b.Property<string>("Year")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Students");
-                });
-
-            modelBuilder.Entity("TutorLiveMentor.Models.StudentEnrollment", b =>
-                {
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("AssignedSubjectId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StudentEnrollmentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("StudentId", "AssignedSubjectId");
-
                     b.HasIndex("AssignedSubjectId");
 
-                    b.ToTable("StudentEnrollments");
+                    b.HasIndex("Department", "Year");
+
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("TutorLiveMentor.Models.Subject", b =>
@@ -179,38 +171,24 @@ namespace TutorLiveMentor10.Migrations
                     b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("TutorLiveMentor.Models.StudentEnrollment", b =>
+            modelBuilder.Entity("TutorLiveMentor.Models.Student", b =>
                 {
                     b.HasOne("TutorLiveMentor.Models.AssignedSubject", "AssignedSubject")
-                        .WithMany("Enrollments")
+                        .WithMany("Students")
                         .HasForeignKey("AssignedSubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TutorLiveMentor.Models.Student", "Student")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("AssignedSubject");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("TutorLiveMentor.Models.AssignedSubject", b =>
                 {
-                    b.Navigation("Enrollments");
+                    b.Navigation("Students");
                 });
 
             modelBuilder.Entity("TutorLiveMentor.Models.Faculty", b =>
                 {
                     b.Navigation("AssignedSubjects");
-                });
-
-            modelBuilder.Entity("TutorLiveMentor.Models.Student", b =>
-                {
-                    b.Navigation("Enrollments");
                 });
 
             modelBuilder.Entity("TutorLiveMentor.Models.Subject", b =>

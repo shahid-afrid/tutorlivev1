@@ -1,29 +1,117 @@
-﻿@model TutorLiveMentor.Models.Student
+﻿@model TutorLiveMentor.Controllers.StudentDashboardViewModel
 
-<h2>Student Dashboard</h2>
+@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+<style>
+    .faculty-card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .faculty-card {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 15px;
+        width: 200px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .faculty-icon {
+        font-size: 50px;
+        line-height: 1;
+        margin-bottom: 10px;
+    }
+    .enrolled-subject {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .subject-info {
+        flex-grow: 1;
+        text-align: left;
+    }
+</style>
+
+<h2>@ViewData["Title"]</h2>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div style="color: green; font-weight: bold;">
-        @TempData["SuccessMessage"]
-    </div>
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
 
-<div style="border:1px solid #bbb; padding:20px; width:350px;">
-    <p><b>Name:</b> @Model.FullName</p>
-    <p><b>Regd Number:</b> @Model.RegdNumber</p>
-    <p><b>Year:</b> @Model.Year</p>
-    <p><b>Department:</b> @Model.Department</p>
-    <p><b>Email:</b> @Model.Email</p>
-    <p><b>Password:</b> @Model.Password</p>
-    <p><b>Assigned Faculty:</b> <span style="color:red;">Not assigned yet</span></p>
-    <form method="get" action="/Student/Edit" style="display:inline;">
-        <button type="submit">Edit Profile</button>
-    </form>
-    <form method="get" action="/Student/ChangePassword" style="display:inline;">
-        <button type="submit">Change Password</button>
-    </form>
-    <form method="get" action="/Student/Logout" style="display:inline;">
-        <button type="submit">Logout</button>
-    </form>
-</div>
+<hr />
+
+<h3>Your Enrolled Subjects</h3>
+@if (Model.Student.Enrollments.Any())
+{
+    @foreach (var enrollment in Model.Student.Enrollments)
+    {
+        <div class="enrolled-subject">
+            <div class="subject-info">
+                <h5><strong>@enrollment.AssignedSubject.Subject.Name</strong></h5>
+                <p class="mb-1">Faculty: @enrollment.AssignedSubject.Faculty.Name</p>
+                <small class="text-muted">Students enrolled: @enrollment.AssignedSubject.SelectedCount / 60</small>
+            </div>
+            <div>
+                <form asp-action="UnenrollSubject" method="post" style="display:inline;">
+                    <input type="hidden" name="assignedSubjectId" value="@enrollment.AssignedSubjectId" />
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to unenroll from this subject?')">
+                        Unenroll
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>You are not enrolled in any subjects yet.</p>
+}
+
+<hr />
+
+<h3>Available Subjects for Enrollment</h3>
+
+@if (Model.AvailableSubjectsGrouped.Any())
+{
+    @foreach (var subjectGroup in Model.AvailableSubjectsGrouped)
+    {
+        <h4>Subject: @subjectGroup.Key</h4>
+        <p class="text-muted mb-3">Choose one faculty for this subject:</p>
+        <div class="faculty-card-container mb-4">
+            @foreach (var assignedSubject in subjectGroup)
+            {
+                <div class="faculty-card">
+                    <div class="faculty-icon">👤</div>
+                    <h6>@assignedSubject.Faculty.Name</h6>
+                    <p>Students: @assignedSubject.SelectedCount / 60</p>
+                    
+                    <form asp-action="SelectSubject" method="post">
+                        <input type="hidden" name="assignedSubjectId" value="@assignedSubject.AssignedSubjectId" />
+                        <button type="submit" 
+                                class="btn btn-primary btn-sm" 
+                                disabled="@(assignedSubject.SelectedCount >= 60)"
+                                title="@(assignedSubject.SelectedCount >= 60 ? "Subject is full" : "Click to enroll")">
+                            @(assignedSubject.SelectedCount >= 60 ? "Full" : "Enroll")
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+}
+else
+{
+    <p>No new subjects available for enrollment at this time. You may have already enrolled in all available subjects for your year and department.</p>
+}

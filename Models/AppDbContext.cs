@@ -4,12 +4,15 @@ namespace TutorLiveMentor.Models
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+        }
 
         public DbSet<Student> Students { get; set; }
         public DbSet<Faculty> Faculties { get; set; }
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<AssignedSubject> AssignedSubjects { get; set; }
+        public DbSet<StudentEnrollment> StudentEnrollments { get; set; } // Add this DbSet
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,18 +30,19 @@ namespace TutorLiveMentor.Models
                 .WithMany(f => f.AssignedSubjects)
                 .HasForeignKey(a => a.FacultyId);
 
-            // Student -> AssignedSubject (many-to-one, optional)
-            modelBuilder.Entity<Student>()
-                .HasOne(s => s.AssignedSubject)
-                .WithMany(a => a.Students)
-                .HasForeignKey(s => s.AssignedSubjectId)
-                .OnDelete(DeleteBehavior.SetNull);
+            // Configure the many-to-many relationship
+            modelBuilder.Entity<StudentEnrollment>()
+                .HasKey(se => new { se.StudentId, se.AssignedSubjectId });
 
-            // (Optional) Add indexes for performance
-            modelBuilder.Entity<AssignedSubject>()
-                .HasIndex(a => new { a.SubjectId, a.Department, a.Year });
-            modelBuilder.Entity<Student>()
-                .HasIndex(s => new { s.Department, s.Year });
+            modelBuilder.Entity<StudentEnrollment>()
+                .HasOne(se => se.Student)
+                .WithMany(s => s.Enrollments)
+                .HasForeignKey(se => se.StudentId);
+
+            modelBuilder.Entity<StudentEnrollment>()
+                .HasOne(se => se.AssignedSubject)
+                .WithMany(a => a.Enrollments)
+                .HasForeignKey(se => se.AssignedSubjectId);
         }
     }
 }
