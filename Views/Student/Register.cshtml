@@ -1,74 +1,524 @@
 ﻿@model TutorLiveMentor.Models.StudentRegistrationModel
 
-<h2>Student Registration</h2>
-@using (Html.BeginForm("Register", "Student", FormMethod.Post))
-{
-    @Html.ValidationSummary(true)
-
-    <label>Full Name</label>
-    @Html.TextBoxFor(m => m.FullName, new { @required = "required" })
-    @Html.ValidationMessageFor(m => m.FullName)
-    <br />
-
-    <label>Regd Number</label>
-    @Html.TextBoxFor(m => m.RegdNumber, new { id = "regdnum", maxlength = "10", @required = "required", oninput = "checkRegdNum(this)" })
-    <span id="regdError" style="color:red"></span>
-    @Html.ValidationMessageFor(m => m.RegdNumber)
-    <br />
-
-    <label>Year</label>
-    @Html.DropDownListFor(m => m.Year, new SelectList(new[] { "II Year", "III Year", "IV Year" }), "Select Year", new { @required = "required" })
-    @Html.ValidationMessageFor(m => m.Year)
-    <br />
-
-    <label>Department</label>
-    @Html.DropDownListFor(m => m.Department, new SelectList(new[] {
-    "CSE","CSE(DS)","CSE(AIML)","CSE(CS)","CSE(BS)",
-        "ECE","EEE","MECH","CIVIL"
-    }), "Select Department", new { @required = "required" })
-@Html.ValidationMessageFor(m => m.Department)
-<br />
-
-<label>Email</label>
-@Html.TextBoxFor(m => m.Email, new { type = "email", id = "email", @required = "required" })
-@Html.ValidationMessageFor(m => m.Email)
-<br />
-
-<label>Password</label>
-<div style="display: inline-flex; align-items: center;">
-    <input type="password" id="password" name="Password" required style="margin-right:5px;" />
-    <button type="button" onclick="togglePassword()" style="background:none; border:none; cursor:pointer;">
-        <span id="eye" style="font-size:20px;">👁️</span>
-    </button>
-</div>
-@Html.ValidationMessageFor(m => m.Password)
-<br />
-
-<button type="submit">Register</button>
+@{
+    ViewBag.Title = "Student Registration";
+    Layout = null;
 }
 
-@section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-    <script type="text/javascript">
-        function checkRegdNum(input) {
-            var span = document.getElementById('regdError');
-            if (input.value.length !== 10) {
-                span.textContent = "Regd Number must be exactly 10 characters.";
-            } else {
-                span.textContent = "";
-            }
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Student Registration - TutorLiveMentor</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --royal-blue: #274060;
+            --warm-gold: #FFC857;
+            --cream: #F9FAF2;
+            --slate: #CED3DC;
+            --card-shadow: rgba(39,64,96,0.13);
+            --success-green: #28a745;
+            --error-red: #dc3545;
+            --warning-orange: #fd7e14;
         }
 
-        function togglePassword() {
-            var pwd = document.getElementById("password");
-            var eye = document.getElementById("eye");
-            if (pwd.type === "password") {
-                pwd.type = "text";
-                eye.textContent = "🙈";
-            } else {
-                pwd.type = "password";
-                eye.textContent = "👁️";
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+            background: linear-gradient(rgba(249, 250, 242, 0.15), rgba(255, 200, 87, 0.10)),
+            url('@Url.Content("~/images/RGMCET-BACKGROUND.jpg")') center center/cover no-repeat fixed;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            display: block;
+            background: linear-gradient(135deg, var(--cream) 60%, var(--warm-gold) 100%);
+            opacity: 0.20;
+            pointer-events: none;
+        }
+
+        .glass-card {
+            background: rgba(249,250,242,0.92);
+            box-shadow: 0 16px 48px var(--card-shadow);
+            border-radius: 26px;
+            padding: 40px;
+            backdrop-filter: blur(12px);
+            max-width: 500px;
+            width: 90vw;
+            margin: 60px auto;
+            position: relative;
+            z-index: 1;
+            border: 2px solid var(--slate);
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px auto;
+            display: block;
+            filter: drop-shadow(2px 6px 18px var(--royal-blue));
+            object-fit: contain;
+            background: var(--cream);
+            border-radius: 12px;
+            padding: 6px;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--royal-blue);
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: var(--royal-blue);
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .required::after {
+            content: " *";
+            color: var(--error-red);
+        }
+
+        input[type="text"], input[type="email"], input[type="password"], select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--slate);
+            border-radius: 12px;
+            font-size: 1em;
+            font-family: 'Montserrat', sans-serif;
+            background: rgba(249,250,242,0.8);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus {
+            outline: none;
+            border-color: var(--warm-gold);
+            box-shadow: 0 0 0 3px rgba(255, 200, 87, 0.2);
+        }
+
+        .input-valid {
+            border-color: var(--success-green) !important;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2) !important;
+        }
+
+        .input-invalid {
+            border-color: var(--error-red) !important;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2) !important;
+        }
+
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 2;
+        }
+
+        .glass-btn {
+            width: 100%;
+            background: linear-gradient(90deg, var(--success-green) 74%, var(--warm-gold) 100%);
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            padding: 16px 24px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 24px var(--card-shadow);
+            border: 2px solid var(--slate);
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .glass-btn.enabled {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .glass-btn.enabled:hover {
+            box-shadow: 0 16px 32px rgba(40, 167, 69, 0.3);
+            background: linear-gradient(90deg, var(--warm-gold) 62%, var(--success-green) 100%);
+            color: var(--royal-blue);
+            transform: translateY(-3px);
+            border: 2px solid var(--success-green);
+        }
+
+        .validation-summary-errors {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid var(--error-red);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: var(--error-red);
+        }
+
+        .field-validation-error, .real-time-error {
+            color: var(--error-red);
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .field-validation-success {
+            color: var(--success-green);
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .nav-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(249,250,242,0.9);
+            color: var(--royal-blue);
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid var(--slate);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--warm-gold);
+            color: var(--royal-blue);
+            transform: translateY(-2px);
+        }
+
+        .validation-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .validation-icon.show {
+            opacity: 1;
+        }
+
+        .form-progress {
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--slate);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--royal-blue), var(--warm-gold));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.85em;
+            color: var(--royal-blue);
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        @@media (max-width: 768px) {
+            .glass-card {
+                margin: 20px auto;
+                padding: 30px 20px;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+
+            .nav-link {
+                position: static;
+                margin-bottom: 20px;
+                display: inline-block;
             }
         }
-    </script>
-}
+    </style>
+</head>
+<body>
+    <a href="@Url.Action("Index", "Student")" class="nav-link">← Back to Student</a>
+    
+    <div class="glass-card">
+        <img src="~/images/RGMCET.jpg" alt="RGMCET Logo" class="logo" />
+        <h2>Student Registration</h2>
+
+        <!-- Progress Indicator -->
+        <div class="form-progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Complete all fields to register</div>
+        </div>
+        
+        @using (Html.BeginForm("Register", "Student", FormMethod.Post))
+        {
+            @Html.ValidationSummary(true)
+
+            <div class="form-group">
+                <label class="required">Full Name</label>
+                @Html.TextBoxFor(m => m.FullName, new { @required = "required", oninput = "validateFullName(this)" })
+                <span class="validation-icon" id="fullNameIcon"></span>
+                <span id="fullNameError" class="real-time-error"></span>
+                @Html.ValidationMessageFor(m => m.FullName)
+            </div>
+
+            <div class="form-group">
+                <label class="required">Registration Number</label>
+                @Html.TextBoxFor(m => m.RegdNumber, new { id = "regdnum", maxlength = "10", @required = "required", oninput = "validateRegdNum(this)" })
+                <span class="validation-icon" id="regdIcon"></span>
+                <span id="regdError" class="real-time-error"></span>
+                @Html.ValidationMessageFor(m => m.RegdNumber)
+            </div>
+
+            <div class="form-group">
+                <label class="required">Year</label>
+                @Html.DropDownListFor(m => m.Year, new SelectList(new[] { "II Year", "III Year", "IV Year" }), "Select Year", new { @required = "required", onchange = "validateYear(this)" })
+                <span class="validation-icon" id="yearIcon"></span>
+                <span id="yearError" class="real-time-error"></span>
+                @Html.ValidationMessageFor(m => m.Year)
+            </div>
+
+            <div class="form-group">
+                <label class="required">Department</label>
+                @Html.DropDownListFor(m => m.Department, new SelectList(new[] {
+                    "CSE","CSE(DS)","CSE(AIML)","CSE(CS)","CSE(BS)",
+                    "ECE","EEE","MECH","CIVIL"
+                }), "Select Department", new { @required = "required", onchange = "validateDepartment(this)" })
+                <span class="validation-icon" id="deptIcon"></span>
+                <span id="deptError" class="real-time-error"></span>
+                @Html.ValidationMessageFor(m => m.Department)
+            </div>
+
+            <div class="form-group">
+                <label class="required">College Email (must end with @@rgmcet.edu.in)</label>
+                @Html.TextBoxFor(m => m.Email, new { type = "email", id = "email", @required = "required", oninput = "validateEmail(this)", placeholder = "yourname@rgmcet.edu.in" })
+                <span class="validation-icon" id="emailIcon"></span>
+                <span id="emailError" class="real-time-error"></span>
+                @Html.ValidationMessageFor(m => m.Email)
+            </div>
+
+            <div class="form-group">
+                <label class="required">Password (8+ chars, 1 uppercase, 1 digit, 1 special character)</label>
+                <div class="password-container">
+                    <input type="password" id="password" name="Password" required oninput="validatePassword(this)" />
+                    <button type="button" class="password-toggle" onclick="togglePassword()">
+                        <span id="eye">👁️</span>
+                    </button>
+                </div>
+                <span class="validation-icon" id="passwordIcon"></span>
+                <span id="passwordError" class="real-time-error"></span>
+                @Html.ValidationMessageFor(m => m.Password)
+            </div>
+
+            <button type="submit" class="glass-btn" id="submitBtn">📝 Register Account</button>
+        }
+    </div>
+
+    @section Scripts {
+        @await Html.PartialAsync("_ValidationScriptsPartial")
+        <script type="text/javascript">
+            let validationState = {
+                fullName: false,
+                regdNumber: false,
+                year: false,
+                department: false,
+                email: false,
+                password: false
+            };
+
+            function updateProgress() {
+                const validCount = Object.values(validationState).filter(v => v).length;
+                const progress = (validCount / 6) * 100;
+                
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                if (progress === 100) {
+                    document.getElementById('progressText').textContent = 'Ready to register! ✅';
+                    document.getElementById('submitBtn').classList.add('enabled');
+                } else {
+                    document.getElementById('progressText').textContent = `${validCount}/6 fields completed`;
+                    document.getElementById('submitBtn').classList.remove('enabled');
+                }
+            }
+
+            function showValidation(fieldId, isValid, message = '') {
+                const field = document.getElementById(fieldId) || document.querySelector(`[name="${fieldId}"]`);
+                const icon = document.getElementById(fieldId + 'Icon');
+                const error = document.getElementById(fieldId + 'Error');
+                
+                if (field) {
+                    field.classList.remove('input-valid', 'input-invalid');
+                    field.classList.add(isValid ? 'input-valid' : 'input-invalid');
+                }
+                
+                if (icon) {
+                    icon.textContent = isValid ? '✅' : '❌';
+                    icon.classList.add('show');
+                }
+                
+                if (error) {
+                    error.textContent = message;
+                    error.className = isValid ? 'field-validation-success' : 'real-time-error';
+                }
+            }
+
+            function validateFullName(input) {
+                const isValid = input.value.trim().length >= 2 && /^[a-zA-Z\s]+$/.test(input.value);
+                const message = isValid ? 'Valid name ✓' : 'Name must be at least 2 characters and contain only letters';
+                
+                validationState.fullName = isValid;
+                showValidation('FullName', isValid, message);
+                updateProgress();
+            }
+
+            function validateRegdNum(input) {
+                const isValid = input.value.length === 10 && /^[A-Za-z0-9]+$/.test(input.value);
+                const message = isValid ? 'Valid registration number ✓' : 'Registration number must be exactly 10 alphanumeric characters';
+                
+                validationState.regdNumber = isValid;
+                showValidation('regdnum', isValid, message);
+                updateProgress();
+            }
+
+            function validateYear(select) {
+                const isValid = select.value !== '';
+                const message = isValid ? 'Year selected ✓' : 'Please select your year';
+                
+                validationState.year = isValid;
+                showValidation('Year', isValid, message);
+                updateProgress();
+            }
+
+            function validateDepartment(select) {
+                const isValid = select.value !== '';
+                const message = isValid ? 'Department selected ✓' : 'Please select your department';
+                
+                validationState.department = isValid;
+                showValidation('Department', isValid, message);
+                updateProgress();
+            }
+
+            function validateEmail(input) {
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@@rgmcet\.edu\.in$/;
+                const isValid = emailPattern.test(input.value);
+                let message;
+                
+                if (!input.value) {
+                    message = 'Email is required';
+                } else if (!input.value.includes('@@')) {
+                    message = 'Invalid email format';
+                } else if (!input.value.endsWith('@@rgmcet.edu.in')) {
+                    message = 'Must use college email ending with @@rgmcet.edu.in';
+                } else if (isValid) {
+                    message = 'Valid college email ✓';
+                } else {
+                    message = 'Invalid email format';
+                }
+                
+                validationState.email = isValid;
+                showValidation('email', isValid, message);
+                updateProgress();
+            }
+
+            function validatePassword(input) {
+                const minLength = input.value.length >= 8;
+                const hasUppercase = /[A-Z]/.test(input.value);
+                const hasDigit = /\d/.test(input.value);
+                const hasSpecial = /[^\w\d\s:]/.test(input.value);
+                
+                const isValid = minLength && hasUppercase && hasDigit && hasSpecial;
+                let message;
+                
+                if (!input.value) {
+                    message = 'Password is required';
+                } else if (!minLength) {
+                    message = `Password too short (${input.value.length}/8 characters)`;
+                } else if (!hasUppercase) {
+                    message = 'Password must contain at least 1 uppercase letter';
+                } else if (!hasDigit) {
+                    message = 'Password must contain at least 1 digit';
+                } else if (!hasSpecial) {
+                    message = 'Password must contain at least 1 special character';
+                } else {
+                    message = 'Strong password ✓';
+                }
+                
+                validationState.password = isValid;
+                showValidation('password', isValid, message);
+                updateProgress();
+            }
+
+            function togglePassword() {
+                var pwd = document.getElementById("password");
+                var eye = document.getElementById("eye");
+                if (pwd.type === "password") {
+                    pwd.type = "text";
+                    eye.textContent = "🙈";
+                } else {
+                    pwd.type = "password";
+                    eye.textContent = "👁️";
+                }
+            }
+
+            // Initialize form validation on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                updateProgress();
+                
+                // Add event listeners for form submission
+                document.querySelector('form').addEventListener('submit', function(e) {
+                    const allValid = Object.values(validationState).every(v => v);
+                    if (!allValid) {
+                        e.preventDefault();
+                        alert('Please complete all required fields correctly before submitting.');
+                    }
+                });
+            });
+        </script>
+    }
+</body>
+</html>

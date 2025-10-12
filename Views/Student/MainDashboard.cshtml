@@ -1,61 +1,281 @@
 ﻿@{
     ViewData["Title"] = "Student Main Dashboard";
+    Layout = null;
 }
 
-<style>
-    .dashboard-card {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 20px;
-        margin: 15px;
-        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-        transition: 0.3s;
-        background-color: white;
-    }
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Student Dashboard - TutorLiveMentor</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --royal-blue: #274060;
+            --warm-gold: #FFC857;
+            --cream: #F9FAF2;
+            --slate: #CED3DC;
+            --card-shadow: rgba(39,64,96,0.13);
+            --success-green: #28a745;
+            --error-red: #dc3545;
+        }
 
-    .dashboard-card:hover {
-        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-    }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+            background: linear-gradient(rgba(249, 250, 242, 0.15), rgba(255, 200, 87, 0.10)),
+            url('@Url.Content("~/images/RGMCET-BACKGROUND.jpg")') center center/cover no-repeat fixed;
+            position: relative;
+        }
 
-    .card-icon {
-        font-size: 48px; /* Using a generic size */
-        margin-bottom: 15px;
-    }
-</style>
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            display: block;
+            background: linear-gradient(135deg, var(--cream) 60%, var(--warm-gold) 100%);
+            opacity: 0.20;
+            pointer-events: none;
+        }
 
-<div class="text-center">
-    <h2 class="display-5">Welcome, Student!</h2>
-</div>
+        .main-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        
-        <div class="col-md-3">
-            <div class="dashboard-card text-center">
+        .dashboard-header {
+            background: rgba(249,250,242,0.92);
+            box-shadow: 0 8px 32px var(--card-shadow);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            margin-bottom: 40px;
+            border: 2px solid var(--slate);
+        }
+
+        .dashboard-header h2 {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--royal-blue);
+            margin: 0;
+            letter-spacing: 1.2px;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px 0;
+        }
+
+        .dashboard-card {
+            background: rgba(249,250,242,0.95);
+            border-radius: 20px;
+            padding: 35px 25px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            border: 2px solid var(--slate);
+            box-shadow: 0 8px 32px var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--warm-gold) 0%, var(--royal-blue) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        .dashboard-card:hover {
+            transform: scale(0.95) translateY(-8px);
+            box-shadow: 0 20px 60px rgba(39,64,96,0.25);
+            border-color: var(--warm-gold);
+        }
+
+        .dashboard-card:hover::before {
+            opacity: 0.08;
+        }
+
+        .dashboard-card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+            filter: drop-shadow(0 8px 16px var(--royal-blue));
+        }
+
+        .dashboard-card:hover .card-title {
+            color: var(--royal-blue);
+            transform: translateY(-2px);
+        }
+
+        .dashboard-card:hover .glass-btn {
+            background: linear-gradient(90deg, var(--warm-gold) 0%, var(--royal-blue) 100%);
+            color: white;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(255, 200, 87, 0.4);
+        }
+
+        .card-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(2px 4px 8px var(--card-shadow));
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--royal-blue);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .card-text {
+            color: #666;
+            font-size: 1em;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .glass-btn {
+            background: linear-gradient(90deg, var(--royal-blue) 0%, var(--warm-gold) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 6px 20px var(--card-shadow);
+            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-btn:hover {
+            text-decoration: none;
+            color: white;
+        }
+
+        .nav-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(249,250,242,0.9);
+            color: var(--royal-blue);
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 2px solid var(--slate);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .nav-link:hover {
+            background: var(--warm-gold);
+            color: var(--royal-blue);
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        /* Card specific colors */
+        .dashboard-card:nth-child(1) .card-icon {
+            color: var(--royal-blue);
+        }
+
+        .dashboard-card:nth-child(2) .card-icon {
+            color: var(--warm-gold);
+        }
+
+        .dashboard-card:nth-child(3) .card-icon {
+            color: var(--success-green);
+        }
+
+        @@media (max-width: 768px) {
+            .main-container {
+                padding: 0 15px;
+            }
+
+            .dashboard-header {
+                padding: 30px 20px;
+                margin-bottom: 30px;
+            }
+
+            .dashboard-header h2 {
+                font-size: 2em;
+            }
+
+            .cards-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .dashboard-card {
+                padding: 25px 20px;
+            }
+
+            .card-icon {
+                font-size: 3em;
+            }
+
+            .nav-link {
+                position: static;
+                display: inline-block;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="@Url.Action("Index", "Home")" class="nav-link">🏠 Home</a>
+    
+    <div class="main-container">
+        <div class="dashboard-header">
+            <h2>Welcome, Student!</h2>
+        </div>
+
+        <div class="cards-container">
+            <div class="dashboard-card">
                 <div class="card-icon">👤</div>
                 <h5 class="card-title">Student Dashboard</h5>
                 <p class="card-text">View your profile and enrollment status.</p>
-                <a asp-controller="Student" asp-action="Dashboard" class="btn btn-primary stretched-link">View Profile</a>
+                <a asp-controller="Student" asp-action="Dashboard" class="glass-btn">View Profile</a>
             </div>
-        </div>
 
-        <div class="col-md-3">
-            <div class="dashboard-card text-center">
+            <div class="dashboard-card">
                 <div class="card-icon">🎓</div>
                 <h5 class="card-title">Select Subject</h5>
                 <p class="card-text">Choose a subject and faculty for the semester.</p>
-                <a asp-controller="Student" asp-action="Dashboard" class="btn btn-primary stretched-link">Select Now</a>
+                <a asp-controller="Student" asp-action="Dashboard" class="glass-btn">Select Now</a>
             </div>
-        </div>
 
-        <div class="col-md-3">
-            <div class="dashboard-card text-center">
+            <div class="dashboard-card">
                 <div class="card-icon">👩‍🏫</div>
                 <h5 class="card-title">Assigned Faculty</h5>
                 <p class="card-text">See details about your assigned faculty.</p>
-                <a asp-controller="Student" asp-action="Dashboard" class="btn btn-primary stretched-link">View Details</a>
+                <a asp-controller="Student" asp-action="Dashboard" class="glass-btn">View Details</a>
             </div>
         </div>
-
     </div>
-</div>
+</body>
+</html>
