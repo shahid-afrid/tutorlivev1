@@ -275,19 +275,46 @@
             text-decoration: none;
         }
 
-        /* Card specific colors */
-        .dashboard-card:nth-child(1) .card-icon {
-            color: var(--royal-blue);
+        /* Logout button styles */
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--error-red), #a71d2a);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 2px solid #a71d2a;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .dashboard-card:nth-child(2) .card-icon {
-            color: var(--warm-gold);
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #c82333, var(--error-red));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+            text-decoration: none;
+            color: white;
         }
 
-        .dashboard-card:nth-child(3) .card-icon {
-            color: var(--success-green);
+        .logout-btn i {
+            font-size: 1.1em;
         }
-        
+
+        /* Adjust nav-link for logout button */
+        .nav-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+        }
+
         @@media (max-width: 768px) {
             .main-container {
                 padding: 0 15px;
@@ -325,15 +352,42 @@
                 display: inline-block;
                 margin-bottom: 20px;
             }
+
+            .logout-btn {
+                position: static;
+                display: inline-flex;
+                margin-bottom: 10px;
+                margin-left: 10px;
+            }
+
+            .mobile-nav {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <a href="@Url.Action("Index", "Home")" class="nav-link"><i class="fas fa-home"></i> Home</a>
+    <div class="mobile-nav" style="padding: 20px;">
+        <a href="@Url.Action("Index", "Home")" class="nav-link"><i class="fas fa-home"></i> Home</a>
+        <a href="@Url.Action("Logout", "Student")" class="logout-btn" 
+           onclick="return confirm('Are you sure you want to logout?')">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
     
     <div class="main-container">
         <div class="dashboard-header">
-            <h2>Welcome, Student!</h2>
+            <h2>Welcome, @ViewBag.StudentName!</h2>
+            <p style="color: #666; margin-top: 10px; font-size: 0.9em;">
+                <i class="fas fa-id-card"></i> @ViewBag.StudentRegdNumber 
+                <span style="margin: 0 8px;">•</span>
+                <i class="fas fa-graduation-cap"></i> @ViewBag.StudentYear 
+                <span style="margin: 0 8px;">•</span>
+                <i class="fas fa-building"></i> @ViewBag.StudentDepartment
+            </p>
         </div>
 
         @* Faculty Selection Schedule Status *@
@@ -344,7 +398,7 @@
                 <div class="schedule-status-alert available">
                     <i class="fas fa-check-circle status-icon"></i>
                     <div class="status-content">
-                        <div class="status-title">Faculty Selection Available</div>
+                        <div class="status-title">✅ Faculty Selection Available</div>
                         <p class="status-description">@ViewBag.ScheduleStatus</p>
                     </div>
                 </div>
@@ -354,7 +408,7 @@
                 <div class="schedule-status-alert unavailable">
                     <i class="fas fa-times-circle status-icon"></i>
                     <div class="status-content">
-                        <div class="status-title">Faculty Selection Closed</div>
+                        <div class="status-title">❌ Faculty Selection Closed</div>
                         <p class="status-description">@ViewBag.ScheduleMessage</p>
                     </div>
                 </div>

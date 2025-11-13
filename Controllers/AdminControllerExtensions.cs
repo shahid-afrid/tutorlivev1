@@ -277,7 +277,90 @@ namespace TutorLiveMentor.Controllers
             if (!IsCSEDSDepartment(department))
                 return RedirectToAction("Login");
 
-            return View();
+            var viewModel = new CSEDSStudentViewModel
+            {
+                Department = "CSEDS",
+                IsEdit = false,
+                AvailableYears = new List<string> { "I Year", "II Year", "III Year", "IV Year" }
+            };
+
+            return View(viewModel);
+        }
+
+        /// <summary>
+        /// Add CSEDS student POST action
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> AddCSEDSStudent(CSEDSStudentViewModel model)
+        {
+            var department = HttpContext.Session.GetString("AdminDepartment");
+            if (!IsCSEDSDepartment(department))
+                return RedirectToAction("Login");
+
+            // Validate model
+            if (!ModelState.IsValid)
+            {
+                model.AvailableYears = new List<string> { "I Year", "II Year", "III Year", "IV Year" };
+                return View(model);
+            }
+
+            try
+            {
+                // Check if student with this registration number already exists
+                var existingStudent = await _context.Students
+                    .FirstOrDefaultAsync(s => s.RegdNumber == model.RegdNumber);
+
+                if (existingStudent != null)
+                {
+                    ModelState.AddModelError("RegdNumber", "A student with this registration number already exists");
+                    model.AvailableYears = new List<string> { "I Year", "II Year", "III Year", "IV Year" };
+                    return View(model);
+                }
+
+                // Check if email is already used
+                var existingEmail = await _context.Students
+                    .FirstOrDefaultAsync(s => s.Email == model.Email);
+
+                if (existingEmail != null)
+                {
+                    ModelState.AddModelError("Email", "This email is already registered");
+                    model.AvailableYears = new List<string> { "I Year", "II Year", "III Year", "IV Year" };
+                    return View(model);
+                }
+
+                // Create new student
+                var student = new Student
+                {
+                    Id = model.RegdNumber, // Use RegdNumber as ID
+                    FullName = model.FullName,
+                    RegdNumber = model.RegdNumber,
+                    Email = model.Email,
+                    Password = string.IsNullOrWhiteSpace(model.Password) ? "TutorLive123" : model.Password,
+                    Year = model.Year,
+                    Department = "CSEDS",
+                    SelectedSubject = ""
+                };
+
+                _context.Students.Add(student);
+                await _context.SaveChangesAsync();
+
+                await _signalRService.NotifyUserActivity(
+                    HttpContext.Session.GetString("AdminEmail") ?? "",
+                    "Admin",
+                    "Student Added",
+                    $"New CSEDS student {student.FullName} has been added to the system"
+                );
+
+                TempData["SuccessMessage"] = "Student added successfully!";
+                return RedirectToAction("ManageCSEDSStudents");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding student: {ex.Message}");
+                ModelState.AddModelError("", $"Error adding student: {ex.Message}");
+                model.AvailableYears = new List<string> { "I Year", "II Year", "III Year", "IV Year" };
+                return View(model);
+            }
         }
 
         /// <summary>
@@ -300,7 +383,91 @@ namespace TutorLiveMentor.Controllers
                 return RedirectToAction("ManageCSEDSStudents");
             }
 
-            return View(student);
+            var viewModel = new CSEDSStudentViewModel
+            {
+                StudentId = student.Id,
+                FullName = student.FullName,
+                RegdNumber = student.RegdNumber,
+                Email = student.Email,
+                Year = student.Year,
+                Department = student.Department,
+                IsEdit = true,
+                AvailableYears = new List<string> { "I Year", "II Year", "III Year", "IV Year" }
+            };
+
+            return View(viewModel);
+        }
+
+        /// <summary>
+        /// Edit CSEDS student POST action
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> EditCSEDSStudent(CSEDSStudentViewModel model)
+        {
+            var department = HttpContext.Session.GetString("AdminDepartment");
+            if (!IsCSEDSDepartment(department))
+                return RedirectToAction("Login");
+
+            // Validate model
+            if (!ModelState.IsValid)
+            {
+                model.AvailableYears = new List<string> { "I Year", "II Year", "III Year", "IV Year" };
+                return View(model);
+            }
+
+            try
+            {
+                var student = await _context.Students
+                    .FirstOrDefaultAsync(s => s.Id == model.StudentId && 
+                                            (s.Department == "CSEDS" || s.Department == "CSE(DS)"));
+
+                if (student == null)
+                {
+                    TempData["ErrorMessage"] = "Student not found";
+                    return RedirectToAction("ManageCSEDSStudents");
+                }
+
+                // Check if email is already used by another student
+                var existingStudent = await _context.Students
+                    .FirstOrDefaultAsync(s => s.Email == model.Email && s.Id != model.StudentId);
+
+                if (existingStudent != null)
+                {
+                    ModelState.AddModelError("Email", "This email is already registered to another student");
+                    model.AvailableYears = new List<string> { "I Year", "II Year", "III Year", "IV Year" };
+                    return View(model);
+                }
+
+                // Update student information
+                student.FullName = model.FullName;
+                student.Email = model.Email;
+                student.Year = model.Year;
+
+                // Update password only if provided
+                if (!string.IsNullOrWhiteSpace(model.Password))
+                {
+                    student.Password = model.Password;
+                }
+
+                await _context.SaveChangesAsync();
+
+                await _signalRService.NotifyUserActivity(
+                    HttpContext.Session.GetString("AdminEmail") ?? "",
+                    "Admin",
+                    "Student Updated",
+                    $"CSEDS student {student.FullName} information has been updated"
+                );
+
+                TempData["SuccessMessage"] = "Student information updated successfully!";
+                return RedirectToAction("ManageCSEDSStudents");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating student: {ex.Message}");
+                ModelState.AddModelError("", $"Error updating student: {ex.Message}");
+                model.AvailableYears = new List<string> { "I Year", "II Year", "III Year", "IV Year" };
+                return View(model);
+            }
         }
 
         /// <summary>

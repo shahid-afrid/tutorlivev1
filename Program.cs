@@ -2,12 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using TutorLiveMentor.Models;
 using TutorLiveMentor.Hubs;
 using TutorLiveMentor.Services;
-using System.Text;
+using TutorLiveMentor.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Remove explicit Kestrel configuration to avoid port conflicts
-// Let ASP.NET Core use the default configuration from launchSettings.json
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -15,48 +15,167 @@ builder.Services.AddControllersWithViews();
 // Add SignalR for real-time updates
 builder.Services.AddSignalR(options =>
 {
-    options.EnableDetailedErrors = true;
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
     options.KeepAliveInterval = TimeSpan.FromSeconds(15);
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
 });
 
-// Register SignalR service
+// Register services
 builder.Services.AddScoped<SignalRService>();
+builder.Services.AddSingleton<PasswordHashService>();
 
-// Add session support
+// [SECURITY] Add Rate Limiting for login attempts
+builder.Services.AddRateLimiter(rateLimiterOptions =>
+{
+    // Login rate limiting: 5 attempts per 15 minutes
+    rateLimiterOptions.AddPolicy("login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(15),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+
+    // API rate limiting: 100 requests per minute
+    rateLimiterOptions.AddPolicy("api", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+
+    rateLimiterOptions.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", cancellationToken);
+    };
+});
+
+// [SECURITY] Configure secure session with proper security settings
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // 30 minute timeout
+    options.Cookie.HttpOnly = true; // Prevent JavaScript access
+    options.Cookie.IsEssential = true; // Always send cookie
     options.Cookie.Name = "TutorLiveMentor.Session";
-    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SameSite = SameSiteMode.Strict; // [SECURITY] Changed from Lax to Strict
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // [SECURITY] HTTPS only
+    options.Cookie.MaxAge = TimeSpan.FromHours(8); // [SECURITY] Max session duration
 });
 
-// Register your AppDbContext and connection string
+// [SECURITY] Add anti-forgery with secure configuration
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.HeaderName = "X-XSRF-TOKEN";
+});
+
+// Register AppDbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// [HEALTH] Add Health Checks for Azure deployment
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>(
+        name: "database",
+        failureStatus: HealthStatus.Unhealthy,
+        tags: new[] { "db", "sql" })
+    .AddCheck("self", () => HealthCheckResult.Healthy("Application is running"), tags: new[] { "api" });
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+// [ADMIN SEEDER] Automatically seed default admin accounts
+using (var scope = app.Services.CreateScope())
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts(); // Add HSTS for production
+    var services = scope.ServiceProvider;
+    var seederLogger = services.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        
+        // Ensure database is created (for first-time deployment)
+        await context.Database.MigrateAsync();
+        
+        // Seed default admin accounts
+        await AdminSeeder.SeedDefaultAdmins(context, seederLogger);
+    }
+    catch (Exception ex)
+    {
+        seederLogger.LogError(ex, "An error occurred while seeding the database.");
+    }
 }
 
-// Optional: Force HTTPS redirect (comment out if you only want HTTP)
-// app.UseHttpsRedirection();
+// [SECURITY] Configure the HTTP request pipeline with security
+if (!app.Environment.IsDevelopment())
+{
+    // Production error handling - don't expose details
+    app.UseExceptionHandler("/Home/Error");
+    app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
+    
+    // [SECURITY] HSTS: Force HTTPS for 1 year
+    app.UseHsts();
+}
+else
+{
+    // Development: Show detailed errors
+    app.UseDeveloperExceptionPage();
+}
+
+// [SECURITY] Force HTTPS redirect (ENABLED)
+app.UseHttpsRedirection();
+
+// [SECURITY] Add custom security headers middleware
+app.UseSecurityHeaders();
 
 app.UseStaticFiles();
 
-// Enable session middleware BEFORE routing and authorization
-app.UseSession();
+// [SECURITY] Enable rate limiting
+app.UseRateLimiter();
 
 app.UseRouting();
+
+// Session MUST come before Authorization
+app.UseSession();
+
 app.UseAuthorization();
+
+// [HEALTH] Map Health Check Endpoints
+// Basic health check - returns 200 OK if app is running
+app.MapHealthChecks("/health");
+
+// Detailed health check - shows status of each component (database, etc.)
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var result = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                duration = e.Value.Duration.TotalMilliseconds
+            }),
+            totalDuration = report.TotalDuration.TotalMilliseconds
+        });
+        await context.Response.WriteAsync(result);
+    }
+});
 
 // Map SignalR hub
 app.MapHub<SelectionHub>("/selectionHub");
@@ -65,9 +184,20 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Log the URLs the application is listening on
+// Log startup information
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("?? TutorLiveMentor Server starting with SignalR real-time support...");
-logger.LogInformation("?? SignalR Hub available at: /selectionHub");
+logger.LogInformation("========================================");
+logger.LogInformation("TutorLiveMentor Server Starting...");
+logger.LogInformation("========================================");
+logger.LogInformation("[SECURITY] HTTPS Redirect: ENABLED");
+logger.LogInformation("[SECURITY] HSTS: ENABLED (Production only)");
+logger.LogInformation("[SECURITY] Rate Limiting: ENABLED");
+logger.LogInformation("[SECURITY] Secure Sessions: ENABLED");
+logger.LogInformation("[SECURITY] Security Headers: ENABLED");
+logger.LogInformation("[SECURITY] Anti-CSRF: ENABLED");
+logger.LogInformation("[HEALTH] Health Checks: ENABLED at /health and /health/ready");
+logger.LogInformation("[SIGNALR] Hub available at: /selectionHub");
+logger.LogInformation("[ADMIN] Default admin accounts created (if needed)");
+logger.LogInformation("========================================");
 
 app.Run();

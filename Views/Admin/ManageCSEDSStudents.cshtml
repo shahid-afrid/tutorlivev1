@@ -262,13 +262,23 @@
 
         .action-buttons {
             display: flex;
-            gap: 5px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.875em;
-            border-radius: 15px;
+            padding: 10px 16px;
+            font-size: 0.9em;
+            border-radius: 18px;
+            min-width: 80px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-sm i {
+            font-size: 1.1em;
         }
 
         .student-detail {
@@ -361,7 +371,7 @@
                         <option value="">All Semesters</option>
                         @foreach (var semester in Model.AvailableSemesters)
                         {
-                            <option value="@semester.Value">@semester.Text</option>
+                            <option value="@semester.Value">@semester.NumericValue (@semester.Value)</option>
                         }
                     </select>
                 </div>
@@ -443,8 +453,9 @@
                                 <td>
                                     @foreach (var subject in student.EnrolledSubjects.Take(3))
                                     {
+                                        var semesterDisplay = subject.Semester == "I" ? "1 (I)" : subject.Semester == "II" ? "2 (II)" : subject.Semester;
                                         <div class="enrollment-badge" title="Faculty: @subject.FacultyName">
-                                            @subject.SubjectName (Sem @subject.Semester)
+                                            @subject.SubjectName (Sem @semesterDisplay)
                                         </div>
                                     }
                                     @if (student.EnrolledSubjects.Count > 3)
@@ -457,12 +468,14 @@
                                 <td>
                                     <div class="action-buttons">
                                         <a href="@Url.Action("EditCSEDSStudent", new { id = student.StudentId })" 
-                                           class="glass-btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i>
+                                           class="glass-btn btn-sm btn-warning"
+                                           title="Edit Student">
+                                            <i class="fas fa-edit"></i> Edit
                                         </a>
                                         <button type="button" class="glass-btn btn-sm btn-danger" 
-                                                onclick="deleteStudent('@student.StudentId', '@student.FullName')">
-                                            <i class="fas fa-trash"></i>
+                                                onclick="deleteStudent('@student.StudentId', '@student.FullName')"
+                                                title="Delete Student">
+                                            <i class="fas fa-trash"></i> Delete
                                         </button>
                                     </div>
                                 </td>
@@ -553,11 +566,12 @@
             }
 
             students.forEach(student => {
-                const subjectBadges = student.enrolledSubjects.slice(0, 3).map(subject => 
-                    `<div class="enrollment-badge" title="Faculty: ${subject.facultyName}">
-                        ${subject.subjectName} (Sem ${subject.semester})
+                const subjectBadges = student.enrolledSubjects.slice(0, 3).map(subject => {
+                    const semesterDisplay = subject.semester === 'I' ? '1 (I)' : subject.semester === 'II' ? '2 (II)' : subject.semester;
+                    return `<div class="enrollment-badge" title="Faculty: ${subject.facultyName}">
+                        ${subject.subjectName} (Sem ${semesterDisplay})
                      </div>`
-                ).join('');
+                }).join('');
 
                 const moreBadge = student.enrolledSubjects.length > 3 ? 
                     `<div class="enrollment-badge" style="background: #666;">
@@ -590,12 +604,14 @@
                     <td>
                         <div class="action-buttons">
                             <a href="@Url.Action("EditCSEDSStudent")?id=${student.studentId}" 
-                               class="glass-btn btn-sm btn-warning">
-                                <i class="fas fa-edit"></i>
+                               class="glass-btn btn-sm btn-warning"
+                               title="Edit Student">
+                                <i class="fas fa-edit"></i> Edit
                             </a>
                             <button type="button" class="glass-btn btn-sm btn-danger" 
-                                    onclick="deleteStudent('${student.studentId}', '${student.fullName}')">
-                                <i class="fas fa-trash"></i>
+                                    onclick="deleteStudent('${student.studentId}', '${student.fullName}')"
+                                    title="Delete Student">
+                                <i class="fas fa-trash"></i> Delete
                             </button>
                         </div>
                     </td>

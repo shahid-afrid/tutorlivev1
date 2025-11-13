@@ -1,4 +1,4 @@
-@model TutorLiveMentor.Models.Student
+﻿@model TutorLiveMentor.Models.Student
 
 @{
     ViewData["Title"] = "My Selected Subjects";
@@ -8,7 +8,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Selected Subjects - TutorLiveMentor</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
@@ -61,16 +62,20 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(249,250,242,0.9);
+            background: rgba(249,250,242,0.95);
             color: var(--royal-blue);
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 25px;
             text-decoration: none;
             font-weight: 600;
             border: 2px solid var(--slate);
             backdrop-filter: blur(8px);
             transition: all 0.3s ease;
-            z-index: 100;
+            z-index: 1000;
+            box-shadow: 0 4px 15px var(--card-shadow);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .nav-link:hover {
@@ -78,6 +83,7 @@
             color: var(--royal-blue);
             transform: translateY(-2px);
             text-decoration: none;
+            box-shadow: 0 6px 20px rgba(255, 200, 87, 0.4);
         }
 
         .dashboard-header {
@@ -164,9 +170,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5em;
-            color: white;
+            font-size: 1.8em;
+            line-height: 1;
             box-shadow: 0 4px 15px var(--card-shadow);
+            flex-shrink: 0;
+            color: white;
         }
 
         .subject-info h3 {
@@ -316,6 +324,17 @@
         @@media (max-width: 768px) {
             .main-container {
                 padding: 0 15px;
+                margin-top: 60px;
+            }
+
+            .nav-link {
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                right: auto;
+                width: auto;
+                padding: 10px 20px;
+                font-size: 0.9em;
             }
 
             .dashboard-header {
@@ -337,12 +356,6 @@
 
             .subject-details {
                 grid-template-columns: 1fr;
-            }
-
-            .nav-link {
-                position: static;
-                display: inline-block;
-                margin-bottom: 20px;
             }
         }
     </style>
@@ -374,9 +387,9 @@
                 {
                     <div class="subject-card">
                         <div class="subject-header">
-                            <div class="subject-icon">
-                                <i class="fas fa-book"></i>
-                            </div>
+                            <div class="subject-icon">📚</div>
+
+
                             <div class="subject-info">
                                 <h3>@enrollment.AssignedSubject.Subject.Name</h3>
                                 <div class="subject-year">@enrollment.AssignedSubject.Department</div>

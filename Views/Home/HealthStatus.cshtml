@@ -1,0 +1,378 @@
+@{
+    ViewData["Title"] = "Application Health Status";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TutorLiveMentor</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        :root {
+            --royal-blue: #274060;
+            --warm-gold: #FFC857;
+            --cream: #F9FAF2;
+            --slate: #CED3DC;
+            --success-green: #28a745;
+            --error-red: #dc3545;
+        }
+
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--warm-gold) 100%);
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(39, 64, 96, 0.13);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--royal-blue);
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            color: #666;
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(39, 64, 96, 0.13);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 1.2em;
+        }
+
+        .status-healthy {
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid var(--success-green);
+            color: var(--success-green);
+        }
+
+        .status-unhealthy {
+            background: rgba(220, 53, 69, 0.1);
+            border: 2px solid var(--error-red);
+            color: var(--error-red);
+        }
+
+        .status-loading {
+            background: rgba(255, 200, 87, 0.1);
+            border: 2px solid var(--warm-gold);
+            color: var(--royal-blue);
+        }
+
+        .icon-large {
+            font-size: 2em;
+        }
+
+        .endpoint-box {
+            background: #f8f9fa;
+            border-left: 4px solid var(--royal-blue);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .endpoint-url {
+            color: var(--royal-blue);
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .check-details {
+            margin-top: 20px;
+        }
+
+        .check-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .check-item:last-child {
+            border-bottom: none;
+        }
+
+        .check-name {
+            font-weight: 600;
+            color: var(--royal-blue);
+        }
+
+        .check-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .status-ok {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .status-fail {
+            background: var(--error-red);
+            color: white;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, var(--royal-blue), var(--warm-gold));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px auto;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(39, 64, 96, 0.3);
+        }
+
+        .info-box {
+            background: rgba(32, 201, 151, 0.1);
+            border-left: 4px solid #20c997;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-box h3 {
+            color: var(--royal-blue);
+            margin: 0 0 10px 0;
+        }
+
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .info-box li {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--royal-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--warm-gold);
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .status-icon-ok {
+            color: var(--success-green);
+            margin-right: 5px;
+        }
+
+        .status-icon-fail {
+            color: var(--error-red);
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-heartbeat"></i> Application Health Status</h1>
+            <p>Real-time monitoring of TutorLiveMentor system health</p>
+        </div>
+
+        <div class="status-card">
+            <div id="overallStatus" class="status-indicator status-loading">
+                <i class="fas fa-spinner spinner icon-large"></i>
+                <span>Checking health status...</span>
+            </div>
+
+            <button onclick="refreshHealth()" class="refresh-btn">
+                <i class="fas fa-sync-alt"></i>
+                Refresh Health Status
+            </button>
+
+            <div class="endpoint-box">
+                <strong>Health Check Endpoint:</strong><br>
+                <span class="endpoint-url" id="healthUrl">Loading...</span>
+            </div>
+
+            <div class="endpoint-box">
+                <strong>Detailed Health Check:</strong><br>
+                <span class="endpoint-url" id="detailedHealthUrl">Loading...</span>
+            </div>
+
+            <div class="check-details" id="checkDetails">
+                <!-- Health check details will be loaded here -->
+            </div>
+        </div>
+
+        <div class="status-card">
+            <div class="info-box">
+                <h3><i class="fas fa-info-circle"></i> What are Health Checks?</h3>
+                <p>Health checks help Azure (and other platforms) monitor your application:</p>
+                <ul>
+                    <li><strong>Auto-healing:</strong> Azure restarts your app automatically if health checks fail</li>
+                    <li><strong>Load balancing:</strong> Unhealthy instances are removed from traffic</li>
+                    <li><strong>Monitoring:</strong> Integration with Application Insights for alerts</li>
+                    <li><strong>Database check:</strong> Verifies SQL Server connection is working</li>
+                    <li><strong>Application check:</strong> Confirms the web server is responding</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3><i class="fas fa-cloud"></i> Azure Configuration</h3>
+                <p>To enable health checks in Azure App Service:</p>
+                <ul>
+                    <li>Go to: <strong>Azure Portal &rarr; Your App Service &rarr; Health check</strong></li>
+                    <li>Enable: <strong>Health check</strong> toggle</li>
+                    <li>Path: <strong>/health</strong></li>
+                    <li>Interval: <strong>2 minutes</strong> (recommended)</li>
+                    <li>Unhealthy threshold: <strong>3 consecutive failures</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="status-card" style="text-align: center;">
+            <a href="@Url.Action("Index", "Home")" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+        const healthUrl = baseUrl + '/health';
+        const detailedHealthUrl = baseUrl + '/health/ready';
+
+        document.getElementById('healthUrl').textContent = healthUrl;
+        document.getElementById('detailedHealthUrl').textContent = detailedHealthUrl;
+
+        async function refreshHealth() {
+            const overallStatus = document.getElementById('overallStatus');
+            const checkDetails = document.getElementById('checkDetails');
+
+            // Show loading state
+            overallStatus.className = 'status-indicator status-loading';
+            overallStatus.innerHTML = '<i class="fas fa-spinner spinner icon-large"></i><span>Checking health status...</span>';
+
+            try {
+                // Check basic health
+                const basicResponse = await fetch(healthUrl);
+                const isHealthy = basicResponse.ok;
+
+                // Get detailed health info
+                const detailedResponse = await fetch(detailedHealthUrl);
+                const healthData = await detailedResponse.json();
+
+                // Update overall status
+                if (isHealthy && healthData.status === 'Healthy') {
+                    overallStatus.className = 'status-indicator status-healthy';
+                    overallStatus.innerHTML = '<i class="fas fa-check-circle icon-large"></i><span><i class="fas fa-check-circle status-icon-ok"></i>All Systems Healthy</span>';
+                } else {
+                    overallStatus.className = 'status-indicator status-unhealthy';
+                    overallStatus.innerHTML = '<i class="fas fa-exclamation-triangle icon-large"></i><span><i class="fas fa-times-circle status-icon-fail"></i>System Unhealthy</span>';
+                }
+
+                // Display detailed checks
+                let detailsHtml = '<h3 style="color: var(--royal-blue); margin-bottom: 15px;">Component Status:</h3>';
+                
+                healthData.checks.forEach(check => {
+                    const statusClass = check.status === 'Healthy' ? 'status-ok' : 'status-fail';
+                    const iconClass = check.status === 'Healthy' ? 'fa-check-circle status-icon-ok' : 'fa-times-circle status-icon-fail';
+                    
+                    detailsHtml += `
+                        <div class="check-item">
+                            <div>
+                                <div class="check-name"><i class="fas ${iconClass}"></i>${check.name}</div>
+                                <small style="color: #666;">${check.description || 'No description'}</small>
+                            </div>
+                            <div>
+                                <span class="check-status ${statusClass}">${check.status}</span>
+                                <small style="color: #999; margin-left: 10px;">${Math.round(check.duration)}ms</small>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                detailsHtml += `
+                    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                        <strong>Total Check Duration:</strong> ${Math.round(healthData.totalDuration)}ms
+                    </div>
+                `;
+
+                checkDetails.innerHTML = detailsHtml;
+
+            } catch (error) {
+                overallStatus.className = 'status-indicator status-unhealthy';
+                overallStatus.innerHTML = '<i class="fas fa-times-circle icon-large"></i><span><i class="fas fa-exclamation-circle status-icon-fail"></i>Error Checking Health</span>';
+                
+                checkDetails.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: var(--error-red);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3em; margin-bottom: 15px;"></i>
+                        <p><strong>Failed to fetch health status</strong></p>
+                        <p style="color: #666;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshHealth, 30000);
+
+        // Initial load
+        refreshHealth();
+    </script>
+</body>
+</html>

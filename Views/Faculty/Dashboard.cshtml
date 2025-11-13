@@ -9,10 +9,10 @@
 <html>
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Faculty Dashboard - TutorLiveMentor</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
         :root {
             --royal-blue: #274060;
@@ -132,7 +132,6 @@
 
         .dashboard-card:hover .card-icon {
             transform: scale(1.1) rotate(5deg);
-            filter: drop-shadow(0 8px 16px var(--royal-blue));
         }
 
         .dashboard-card:hover .card-title {
@@ -151,7 +150,6 @@
             font-size: 4em;
             margin-bottom: 20px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: drop-shadow(2px 4px 8px var(--card-shadow));
         }
 
         .card-title {
@@ -269,17 +267,17 @@
     </style>
 </head>
 <body>
-    <a href="@Url.Action("Index", "Home")" class="nav-link"><i class="fas fa-home"></i> Home</a>
+    <a href="@Url.Action("Index", "Home")" class="nav-link">?? Home</a>
     
     <div class="main-container">
         <div class="dashboard-header">
-            <h2>Welcome Dr. @Model.Name!</h2>
+            <h2>?? Welcome Dr. @Model.Name!</h2>
             <div class="welcome-text">Faculty Dashboard</div>
         </div>
 
         <div class="cards-container">
             <a href="@Url.Action("Profile", "Faculty")" class="dashboard-card">
-                <div class="card-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                <div class="card-icon">?????</div>
                 <h5 class="card-title">Profile</h5>
                 <div class="card-detail">@Model.Name</div>
                 <p class="card-text">@Model.Email</p>
@@ -287,14 +285,14 @@
             </a>
 
             <a href="@Url.Action("StudentsEnrolled", "Faculty")" class="dashboard-card">
-                <div class="card-icon"><i class="fas fa-user-graduate"></i></div>
+                <div class="card-icon">??</div>
                 <h5 class="card-title">Students Enrolled</h5>
                 <p class="card-text">View all students enrolled under your subjects</p>
                 <span class="glass-btn">View List</span>
             </a>
 
             <a href="@Url.Action("AssignedSubjects", "Faculty")" class="dashboard-card">
-                <div class="card-icon"><i class="fas fa-book-open"></i></div>
+                <div class="card-icon">??</div>
                 <h5 class="card-title">Assigned Subjects</h5>
                 <p class="card-text">Manage and view your assigned subjects for teaching</p>
                 <span class="glass-btn">View Subjects</span>

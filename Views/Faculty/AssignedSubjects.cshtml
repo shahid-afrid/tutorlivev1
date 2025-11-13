@@ -9,6 +9,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Assigned Subjects - TutorLiveMentor</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
@@ -154,7 +155,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5em;
+            font-size: 1.8em;
             color: white;
             box-shadow: 0 4px 15px var(--card-shadow);
         }
@@ -194,7 +195,6 @@
         }
 
         .detail-icon {
-            color: var(--faculty-purple);
             font-size: 1.1em;
         }
 
@@ -216,7 +216,6 @@
 
         .no-subjects-icon {
             font-size: 4em;
-            color: var(--royal-blue);
             margin-bottom: 20px;
         }
 
@@ -289,15 +288,14 @@
     
     <div class="main-container">
         <div class="dashboard-header">
-            <h2><i class="fas fa-book-open"></i> Your Assigned Subjects</h2>
+            <h2><i class="fas fa-book"></i> Your Assigned Subjects</h2>
         </div>
 
         @if (Model != null && Model.Any())
         {
             <div class="subjects-summary">
                 <div class="summary-text">
-                    <i class="fas fa-info-circle"></i>
-                    You are currently assigned to teach <strong>@Model.Count</strong> subject(s)
+                    <i class="fas fa-info-circle"></i> You are currently assigned to teach <strong>@Model.Count</strong> subject(s)
                 </div>
             </div>
 
@@ -307,7 +305,7 @@
                     <div class="subject-card">
                         <div class="subject-header">
                             <div class="subject-icon">
-                                <i class="fas fa-book"></i>
+                                <i class="fas fa-book-open"></i>
                             </div>
                             <div class="subject-info">
                                 <h3>@subject.Subject.Name</h3>
@@ -317,19 +315,19 @@
 
                         <div class="subject-details">
                             <div class="detail-item">
-                                <i class="fas fa-calendar detail-icon"></i>
+                                <span class="detail-icon"><i class="fas fa-calendar-alt"></i></span>
                                 <span class="detail-text">Year @subject.Year</span>
                             </div>
                             <div class="detail-item">
-                                <i class="fas fa-building detail-icon"></i>
+                                <span class="detail-icon"><i class="fas fa-building"></i></span>
                                 <span class="detail-text">@subject.Department</span>
                             </div>
                             <div class="detail-item">
-                                <i class="fas fa-users detail-icon"></i>
+                                <span class="detail-icon"><i class="fas fa-users"></i></span>
                                 <span class="detail-text">@subject.SelectedCount Students</span>
                             </div>
                             <div class="detail-item">
-                                <i class="fas fa-id-badge detail-icon"></i>
+                                <span class="detail-icon"><i class="fas fa-id-badge"></i></span>
                                 <span class="detail-text">ID: @subject.AssignedSubjectId</span>
                             </div>
                         </div>
@@ -340,7 +338,7 @@
         else
         {
             <div class="no-subjects">
-                <div class="no-subjects-icon"><i class="fas fa-book-open"></i></div>
+                <div class="no-subjects-icon"><i class="fas fa-book"></i></div>
                 <h3>No Subjects Assigned</h3>
                 <p>You currently have no subjects assigned to you. Please contact the administration if you believe this is an error.</p>
             </div>

@@ -186,14 +186,14 @@ namespace TutorLiveMentor.Controllers
                     .Include(se => se.AssignedSubject)
                         .ThenInclude(a => a.Faculty)
                     .Where(se => se.Student.Department == "CSE(DS)" || se.Student.Department == "CSEDS")
-                    .OrderByDescending(se => se.StudentEnrollmentId)
+                    .OrderByDescending(se => se.EnrolledAt)
                     .Take(10)
                     .Select(se => new EnrollmentActivityDto
                     {
                         StudentName = se.Student.FullName,
                         SubjectName = se.AssignedSubject.Subject.Name,
                         FacultyName = se.AssignedSubject.Faculty.Name,
-                        EnrollmentDate = DateTime.Now
+                        EnrollmentDate = se.EnrolledAt
                     })
                     .ToListAsync(),
 
@@ -652,7 +652,7 @@ namespace TutorLiveMentor.Controllers
                         .Include(se => se.AssignedSubject)
                             .ThenInclude(a => a.Faculty)
                         .Where(se => se.Student.Department == "CSEEDS" || se.Student.Department == "CSE(DS)")
-                        .OrderByDescending(se => se.StudentEnrollmentId)
+                        .OrderByDescending(se => se.EnrolledAt)
                         .Take(10)
                         .Select(se => new
                         {
@@ -871,7 +871,7 @@ namespace TutorLiveMentor.Controllers
                                             s.Name == model.Name && 
                                             s.Year == model.Year && 
                                             s.Semester == model.Semester &&
-                                            (s.Department == "CSEDS" || s.Department == "CSE(DS)"));
+                                            (s.Department == "CSEEDS" || s.Department == "CSE(DS)"));
 
                 if (duplicateSubject != null)
                     return Json(new { success = false, message = "A subject with this name already exists for the selected year and semester" });
@@ -1005,6 +1005,183 @@ namespace TutorLiveMentor.Controllers
 
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
+        }
+
+        /// <summary>
+        /// Admin Profile page - redirects to department-specific profile
+        /// </summary>
+        [HttpGet]
+        public IActionResult Profile()
+        {
+            var adminId = HttpContext.Session.GetInt32("AdminId");
+            var department = HttpContext.Session.GetString("AdminDepartment");
+
+            if (adminId == null)
+            {
+                TempData["ErrorMessage"] = "Please login to access your profile.";
+                return RedirectToAction("Login");
+            }
+
+            // Redirect to department-specific profile
+            if (IsCSEDSDepartment(department))
+            {
+                return RedirectToAction("CSEDSProfile");
+            }
+            else
+            {
+                // For other departments, redirect to generic profile (to be implemented)
+                return RedirectToAction("CSEDSProfile"); // Temporary fallback
+            }
+        }
+
+        /// <summary>
+        /// CSEDS Admin Profile page
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> CSEDSProfile()
+        {
+            var adminId = HttpContext.Session.GetInt32("AdminId");
+            var department = HttpContext.Session.GetString("AdminDepartment");
+
+            if (adminId == null)
+            {
+                TempData["ErrorMessage"] = "Please login to access your profile.";
+                return RedirectToAction("Login");
+            }
+
+            if (!IsCSEDSDepartment(department))
+            {
+                TempData["ErrorMessage"] = "Access denied. CSEDS department access only.";
+                return RedirectToAction("Login");
+            }
+
+            var admin = await _context.Admins.FirstOrDefaultAsync(a => a.AdminId == adminId.Value);
+            
+            if (admin == null)
+            {
+                TempData["ErrorMessage"] = "Admin account not found.";
+                return RedirectToAction("Login");
+            }
+
+            var viewModel = new AdminProfileViewModel
+            {
+                AdminId = admin.AdminId,
+                Email = admin.Email,
+                Department = admin.Department,
+                CreatedDate = admin.CreatedDate,
+                LastLogin = admin.LastLogin
+            };
+
+            return View(viewModel);
+        }
+
+        /// <summary>
+        /// Update admin profile information
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(AdminProfileViewModel model)
+        {
+            var adminId = HttpContext.Session.GetInt32("AdminId");
+            if (adminId == null || adminId != model.AdminId)
+            {
+                TempData["ErrorMessage"] = "Unauthorized access.";
+                return RedirectToAction("Login");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Invalid data provided.";
+                return View("CSEDSProfile", model);
+            }
+
+            try
+            {
+                var admin = await _context.Admins.FirstOrDefaultAsync(a => a.AdminId == model.AdminId);
+                
+                if (admin == null)
+                {
+                    TempData["ErrorMessage"] = "Admin account not found.";
+                    return RedirectToAction("Login");
+                }
+
+                // Update only email (department cannot be changed)
+                admin.Email = model.Email;
+                
+                await _context.SaveChangesAsync();
+
+                // Update session email
+                HttpContext.Session.SetString("AdminEmail", admin.Email);
+
+                await _signalRService.NotifyUserActivity(
+                    admin.Email,
+                    "Admin",
+                    "Profile Updated",
+                    $"{admin.Department} admin updated their profile"
+                );
+
+                TempData["SuccessMessage"] = "Profile updated successfully!";
+                return RedirectToAction("CSEDSProfile");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating profile: {ex.Message}");
+                TempData["ErrorMessage"] = "Error updating profile. Please try again.";
+                return RedirectToAction("CSEDSProfile");
+            }
+        }
+
+        /// <summary>
+        /// Change admin password
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> ChangeAdminPassword([FromBody] AdminChangePasswordViewModel model)
+        {
+            var adminId = HttpContext.Session.GetInt32("AdminId");
+            
+            if (adminId == null || adminId != model.AdminId)
+            {
+                return Json(new { success = false, message = "Unauthorized access" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { success = false, message = string.Join(", ", errors) });
+            }
+
+            try
+            {
+                var admin = await _context.Admins.FirstOrDefaultAsync(a => a.AdminId == model.AdminId);
+                
+                if (admin == null)
+                {
+                    return Json(new { success = false, message = "Admin account not found" });
+                }
+
+                // Verify current password
+                if (admin.Password != model.CurrentPassword)
+                {
+                    return Json(new { success = false, message = "Current password is incorrect" });
+                }
+
+                // Update password
+                admin.Password = model.NewPassword;
+                await _context.SaveChangesAsync();
+
+                await _signalRService.NotifyUserActivity(
+                    admin.Email,
+                    "Admin",
+                    "Password Changed",
+                    $"{admin.Department} admin changed their password"
+                );
+
+                return Json(new { success = true, message = "Password changed successfully!" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error changing password: {ex.Message}");
+                return Json(new { success = false, message = "Error changing password. Please try again." });
+            }
         }
     }
 

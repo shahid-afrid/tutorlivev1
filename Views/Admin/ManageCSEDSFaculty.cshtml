@@ -12,19 +12,23 @@
     <title>@ViewData["Title"] - TutorLiveMentor</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
     <style>
         :root {
             --royal-blue: #274060;
             --warm-gold: #FFC857;
             --cream: #F9FAF2;
             --slate: #CED3DC;
-            --card-shadow: rgba(39,64,96,0.13);
-            --success-green: #28a745;
-            --error-red: #dc3545;
+            --card-shadow: rgba(39, 64, 96, 0.13);
             --cseds-purple: #6f42c1;
             --cseds-teal: #20c997;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
@@ -32,28 +36,65 @@
             margin: 0;
             padding: 20px 0;
             font-family: 'Montserrat', Arial, sans-serif;
-            background: linear-gradient(rgba(249, 250, 242, 0.15), rgba(255, 200, 87, 0.10)),
-            url('@Url.Content("~/images/RGMCET-BACKGROUND.jpg")') center center/cover no-repeat fixed;
-            position: relative;
+            background: linear-gradient(rgba(249, 250, 242, 0.15), rgba(255, 200, 87, 0.10)), url('@Url.Content("~/images/RGMCET-BACKGROUND.jpg")') center center/cover no-repeat fixed;
         }
 
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 0;
-            display: block;
-            background: linear-gradient(135deg, var(--cream) 60%, var(--warm-gold) 100%);
-            opacity: 0.20;
-            pointer-events: none;
+        /* Modal Overlay Styling - Enhanced */
+        .modal {
+            display: none !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            overflow: hidden !important;
+        }
+
+        .modal.show {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background-color: rgba(39, 64, 96, 0.75) !important;
+            backdrop-filter: blur(4px) !important;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-backdrop {
+            display: none !important;
+        }
+
+        .modal-dialog {
+            position: relative !important;
+            z-index: 10000 !important;
+            margin: 20px !important;
+            max-width: 800px !important;
+            width: 100% !important;
+            max-height: 90vh !important;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @@keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-dialog.modal-lg {
+            max-width: 920px !important;
         }
 
         .main-container {
-            position: relative;
-            z-index: 1;
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
@@ -67,31 +108,22 @@
             padding: 30px;
             margin-bottom: 30px;
             box-shadow: 0 8px 32px var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .page-header h1 {
             color: var(--royal-blue);
             font-weight: 700;
-            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 15px;
-        }
-
-        .page-header .breadcrumb {
-            background: none;
-            padding: 0;
             margin: 0;
-        }
-
-        .page-header .breadcrumb-item a {
-            color: var(--cseds-purple);
-            text-decoration: none;
         }
 
         .faculty-section {
             background: rgba(249,250,242,0.95);
-            backdrop-filter: blur(12px);
             border: 2px solid var(--slate);
             border-radius: 20px;
             padding: 30px;
@@ -99,59 +131,41 @@
             box-shadow: 0 8px 32px var(--card-shadow);
         }
 
-        .section-title {
+        .faculty-section h3 {
             color: var(--royal-blue);
             font-weight: 700;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            margin: 0;
         }
 
         .glass-btn {
-            background: linear-gradient(135deg, var(--cseds-purple) 0%, var(--cseds-teal) 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--cseds-purple), var(--cseds-teal));
+            color: white !important;
             border: none;
             border-radius: 25px;
             padding: 12px 25px;
-            font-size: 1em;
             font-weight: 600;
-            cursor: pointer;
+            cursor: pointer !important;
+            transition: transform 0.2s, box-shadow 0.2s;
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 6px 20px var(--card-shadow);
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
+            display: inline-block;
         }
 
         .glass-btn:hover {
-            background: linear-gradient(135deg, var(--cseds-teal) 0%, var(--cseds-purple) 100%);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(111, 66, 193, 0.4);
-            text-decoration: none;
-            color: white;
+            box-shadow: 0 4px 12px rgba(111, 66, 193, 0.4);
         }
 
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-            color: #212529;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        .btn-sm {
+            padding: 8px 16px !important;
+            font-size: 0.875rem;
+            margin: 2px;
         }
 
         .faculty-table {
             background: white;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
         }
 
         .faculty-table thead {
@@ -160,158 +174,318 @@
         }
 
         .faculty-table thead th {
+            padding: 15px;
             font-weight: 600;
             border: none;
-            padding: 15px;
         }
 
         .faculty-table tbody td {
             padding: 15px;
             vertical-align: middle;
-            border-bottom: 1px solid #f0f0f0;
         }
 
         .faculty-table tbody tr:hover {
             background-color: rgba(111, 66, 193, 0.05);
         }
 
-        .faculty-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            font-weight: 600;
-            margin: 2px;
-        }
-
-        .faculty-badge.year-1 { background: #e3f2fd; color: #1976d2; }
-        .faculty-badge.year-2 { background: #f3e5f5; color: #7b1fa2; }
-        .faculty-badge.year-3 { background: #e8f5e8; color: #388e3c; }
-        .faculty-badge.year-4 { background: #fff3e0; color: #f57c00; }
-
-        .modal {
-            backdrop-filter: blur(4px);
-        }
-
         .modal-content {
-            background: rgba(249,250,242,0.98);
-            border-radius: 20px;
-            border: 2px solid var(--slate);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            border-radius: 24px !important;
+            border: none !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+            background: white !important;
+            overflow: hidden !important;
         }
 
         .modal-header {
-            background: linear-gradient(135deg, var(--cseds-purple), var(--cseds-teal));
-            color: white;
-            border-radius: 18px 18px 0 0;
-            border-bottom: none;
+            background: linear-gradient(135deg, var(--cseds-purple), var(--cseds-teal)) !important;
+            color: white !important;
+            border-radius: 0 !important;
+            padding: 25px 65px !important;
+            border-bottom: none !important;
+            position: relative !important;
         }
 
-        .modal-title {
-            font-weight: 700;
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0) 0%, 
+                rgba(255,255,255,0.3) 50%, 
+                rgba(255,255,255,0) 100%);
+        }
+
+        .modal-header h5 {
+            margin: 0 !important;
+            font-weight: 700 !important;
+            font-size: 1.75rem !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+        }
+
+        .modal-header h5 i {
+            font-size: 1.5rem !important;
+            opacity: 0.9 !important;
+        }
+
+        .modal-header .close-icon {
+            display: none !important;
+        }
+
+        .modal-header .btn-close {
+            display: none !important;
+        }
+
+        .modal-body {
+            padding: 40px 65px !important;
+            background: white !important;
+            max-height: calc(90vh - 200px) !important;
+            overflow-y: auto !important;
+        }
+
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: var(--cseds-purple);
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: var(--cseds-teal);
+        }
+
+        .modal-footer {
+            padding: 25px 65px !important;
+            background: #f8f9fa !important;
+            border-radius: 0 !important;
+            border-top: 1px solid #e9ecef !important;
+            display: flex !important;
+            gap: 12px !important;
+            justify-content: flex-end !important;
         }
 
         .form-label {
-            font-weight: 600;
-            color: var(--royal-blue);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9em;
+            font-weight: 600 !important;
+            color: var(--royal-blue) !important;
+            margin-bottom: 10px !important;
+            font-size: 0.95rem !important;
+            display: block !important;
         }
 
-        .form-control, .form-select {
-            border: 2px solid var(--slate);
-            border-radius: 8px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.8);
-            transition: all 0.3s ease;
+        .form-label small {
+            font-weight: 400 !important;
+            color: #6c757d !important;
+            font-size: 0.85rem !important;
         }
 
-        .form-control:focus, .form-select:focus {
-            border-color: var(--cseds-purple);
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.1);
+        .form-control {
+            border-radius: 12px !important;
+            border: 2px solid #e0e0e0 !important;
+            padding: 16px 20px !important;
+            transition: all 0.3s ease !important;
+            font-size: 1rem !important;
+            background: #fafafa !important;
+            min-height: 50px !important;
+            width: 100% !important;
         }
 
-        .assignment-card {
-            background: rgba(111, 66, 193, 0.1);
-            border: 1px solid rgba(111, 66, 193, 0.2);
+        .form-control:hover {
+            border-color: #d0d0d0 !important;
+            background: white !important;
+        }
+
+        .form-control:focus {
+            border-color: var(--cseds-purple) !important;
+            box-shadow: 0 0 0 4px rgba(111, 66, 193, 0.1) !important;
+            background: white !important;
+            outline: none !important;
+        }
+
+        .form-control::placeholder {
+            color: #adb5bd !important;
+            font-size: 0.95rem !important;
+        }
+
+        .mb-3 {
+            margin-bottom: 28px !important;
+        }
+
+        .mb-3:last-of-type {
+            margin-bottom: 0 !important;
+        }
+
+        .form-check {
+            padding: 14px 16px !important;
+            margin: 10px 0 !important;
+            border-radius: 12px !important;
+            transition: all 0.2s !important;
+            border: 2px solid transparent !important;
+            background: #fafafa !important;
+        }
+
+        .form-check:hover {
+            background-color: rgba(111, 66, 193, 0.05) !important;
+            border-color: rgba(111, 66, 193, 0.2) !important;
+        }
+
+        .form-check-input {
+            width: 22px !important;
+            height: 22px !important;
+            cursor: pointer !important;
+            margin-top: 0 !important;
+            border: 2px solid #d0d0d0 !important;
+            transition: all 0.2s !important;
+        }
+
+        .form-check-input:hover {
+            border-color: var(--cseds-purple) !important;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--cseds-purple) !important;
+            border-color: var(--cseds-purple) !important;
+        }
+
+        .form-check-label {
+            cursor: pointer !important;
+            margin-left: 12px !important;
+            font-weight: 500 !important;
+            color: #2c3e50 !important;
+            font-size: 0.95rem !important;
+            line-height: 1.5 !important;
+        }
+
+        .form-check-label strong {
+            color: var(--royal-blue) !important;
+            font-weight: 600 !important;
+        }
+
+        #subjectsContainer {
+            max-height: 400px !important;
+            overflow-y: auto !important;
+            padding: 10px !important;
+            background: white !important;
+            border-radius: 12px !important;
+            border: 2px solid #e9ecef !important;
+        }
+
+        #subjectsContainer::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #subjectsContainer::-webkit-scrollbar-track {
+            background: #f8f9fa;
             border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
         }
 
-        .assignment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+        #subjectsContainer::-webkit-scrollbar-thumb {
+            background: var(--cseds-teal);
+            border-radius: 10px;
         }
 
-        .assignment-details {
-            font-size: 0.9em;
-            color: #666;
+        .modal-body > p.text-muted {
+            font-size: 0.95rem !important;
+            color: #6c757d !important;
+            margin-bottom: 20px !important;
+            padding: 12px 16px !important;
+            background: #f8f9fa !important;
+            border-left: 4px solid var(--cseds-teal) !important;
+            border-radius: 8px !important;
         }
 
-        .btn-sm {
+        .badge {
             padding: 6px 12px;
-            font-size: 0.8em;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @@keyframes spin {
-            to { transform: rotate(360deg); }
+            border-radius: 8px;
+            margin: 2px;
+            font-weight: 500;
+            font-size: 0.85rem;
         }
 
         .alert {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 15px 20px;
+            animation: slideIn 0.3s ease-out;
         }
 
-        /* Responsive Design */
+        @@keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            border: none;
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            border: none;
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border: none;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+            border: none !important;
+            color: white !important;
+            border-radius: 12px !important;
+            padding: 12px 28px !important;
+            font-weight: 600 !important;
+            transition: all 0.2s !important;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3) !important;
+        }
+
+        .modal-footer .glass-btn {
+            border-radius: 12px !important;
+            padding: 12px 28px !important;
+        }
+
+        .modal-footer .glass-btn:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(111, 66, 193, 0.4) !important;
+        }
+
+        .modal-footer .glass-btn:active {
+            transform: translateY(0) !important;
+        }
+
+        /* Responsive adjustments for header */
         @@media (max-width: 768px) {
-            .main-container {
-                padding: 0 15px;
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
             }
 
-            .faculty-section {
-                padding: 20px;
-            }
-
-            .faculty-table thead {
-                display: none;
-            }
-
-            .faculty-table tbody tr {
-                display: block;
-                border: 1px solid #ddd;
-                border-radius: 10px;
-                margin-bottom: 15px;
-                padding: 15px;
-            }
-
-            .faculty-table tbody td {
-                display: block;
-                text-align: right;
-                border: none;
-                padding: 8px 0;
-            }
-
-            .faculty-table tbody td::before {
-                content: attr(data-label) ": ";
-                float: left;
-                font-weight: bold;
-                color: var(--royal-blue);
+            .page-header h1 {
+                justify-content: center;
             }
         }
     </style>
@@ -320,32 +494,21 @@
     <div class="main-container">
         <!-- Page Header -->
         <div class="page-header">
-            <h1>
-                <i class="fas fa-chalkboard-teacher"></i>
-                Manage CSEDS Faculty
-            </h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="@Url.Action("CSEDSDashboard", "Admin")">
-                            <i class="fas fa-home"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Faculty Management</li>
-                </ol>
-            </nav>
+            <h1><i class="fas fa-chalkboard-teacher"></i> Manage CSEDS Faculty</h1>
+            <a href="@Url.Action("CSEDSDashboard", "Admin")" class="glass-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
         </div>
 
         <!-- Faculty Management Section -->
         <div class="faculty-section">
-            <div class="section-title">
+            <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3><i class="fas fa-users"></i> Department Faculty</h3>
-                <button type="button" class="glass-btn" data-bs-toggle="modal" data-bs-target="#addFacultyModal">
+                <button type="button" class="glass-btn" onclick="openAddModal()">
                     <i class="fas fa-plus"></i> Add New Faculty
                 </button>
             </div>
 
-            <!-- Faculty Table -->
             <div class="table-responsive">
                 <table class="table faculty-table" id="facultyTable">
                     <thead>
@@ -357,117 +520,93 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var faculty in Model.DepartmentFaculty)
+                        @if (Model?.DepartmentFaculty != null && Model.DepartmentFaculty.Any())
                         {
-                            <tr>
-                                <td data-label="Faculty Details">
-                                    <div>
+                            @foreach (var faculty in Model.DepartmentFaculty)
+                            {
+                                <tr>
+                                    <td>
                                         <strong>@faculty.Name</strong><br>
-                                        <small class="text-muted">@faculty.Email</small><br>
-                                        <span class="badge bg-primary">@faculty.Department</span>
-                                    </div>
-                                </td>
-                                <td data-label="Assigned Subjects">
-                                    @if (faculty.AssignedSubjects.Any())
-                                    {
-                                        @foreach (var subject in faculty.AssignedSubjects)
+                                        <small class="text-muted">@faculty.Email</small>
+                                    </td>
+                                    <td>
+                                        @if (faculty.AssignedSubjects != null && faculty.AssignedSubjects.Any())
                                         {
-                                            <span class="faculty-badge year-@subject.Year">
-                                                @subject.SubjectName (Year @subject.Year, @subject.Semester)
-                                                <small>(@subject.EnrollmentCount students)</small>
-                                            </span>
+                                            @foreach (var s in faculty.AssignedSubjects)
+                                            {
+                                                <span class="badge bg-info text-dark">@s.SubjectName</span>
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">No subjects assigned</span>
-                                    }
-                                </td>
-                                <td data-label="Total Enrollments">
-                                    <span class="badge bg-info">@faculty.TotalEnrollments students</span>
-                                </td>
-                                <td data-label="Actions">
-                                    <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-warning btn-sm" 
-                                                onclick="editFaculty(@faculty.FacultyId, '@faculty.Name', '@faculty.Email')">
+                                        else
+                                        {
+                                            <span class="text-muted"><em>No subjects assigned</em></span>
+                                        }
+                                    </td>
+                                    <td><strong>@faculty.TotalEnrollments</strong> students</td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm" 
+                                                data-faculty-id="@faculty.FacultyId" 
+                                                data-faculty-name="@faculty.Name" 
+                                                data-faculty-email="@faculty.Email"
+                                                onclick="openEditModal(this)">
                                             <i class="fas fa-edit"></i> Edit
                                         </button>
-                                        <button type="button" class="btn btn-success btn-sm" 
-                                                onclick="assignSubjects(@faculty.FacultyId, '@faculty.Name')">
+                                        <button class="btn btn-success btn-sm" 
+                                                data-faculty-id="@faculty.FacultyId" 
+                                                data-faculty-name="@faculty.Name"
+                                                onclick="openAssignModal(this)">
                                             <i class="fas fa-link"></i> Assign
                                         </button>
-                                        <button type="button" class="btn btn-danger btn-sm" 
-                                                onclick="deleteFaculty(@faculty.FacultyId, '@faculty.Name')">
+                                        <button class="btn btn-danger btn-sm" 
+                                                data-faculty-id="@faculty.FacultyId" 
+                                                data-faculty-name="@faculty.Name"
+                                                onclick="deleteFaculty(this)">
                                             <i class="fas fa-trash"></i> Delete
                                         </button>
-                                    </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">
+                                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                                    <p>No faculty members found. Click "Add New Faculty" to get started.</p>
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-
-            @if (!Model.DepartmentFaculty.Any())
-            {
-                <div class="alert alert-info text-center">
-                    <i class="fas fa-info-circle"></i>
-                    No faculty found in the CSEDS department. Click "Add New Faculty" to get started.
-                </div>
-            }
         </div>
     </div>
 
     <!-- Add Faculty Modal -->
-    <div class="modal fade" id="addFacultyModal" tabindex="-1" aria-labelledby="addFacultyModalLabel" aria-hidden="true">
+    <div class="modal" id="addFacultyModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addFacultyModalLabel">
-                        <i class="fas fa-user-plus"></i> Add New CSEDS Faculty
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5><i class="fas fa-user-plus"></i> Add New Faculty</h5>
                 </div>
-                <form id="addFacultyForm">
+                <form onsubmit="handleAddSubmit(event)">
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="facultyName" class="form-label">Faculty Name</label>
-                                    <input type="text" class="form-control" id="facultyName" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="facultyEmail" class="form-label">Email Address</label>
-                                    <input type="email" class="form-control" id="facultyEmail" required>
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Full Name</strong></label>
+                            <input type="text" class="form-control" id="facultyName" placeholder="Enter full name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="facultyPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="facultyPassword" required>
+                            <label class="form-label"><strong>Email Address</strong></label>
+                            <input type="email" class="form-control" id="facultyEmail" placeholder="Enter email address" required>
                         </div>
                         <div class="mb-3">
-                            <label for="selectedSubjects" class="form-label">Assign to Subjects (Optional)</label>
-                            <select class="form-select" id="selectedSubjects" multiple>
-                                @foreach (var subject in Model.AvailableSubjects)
-                                {
-                                    <option value="@subject.SubjectId">
-                                        @subject.Name (Year @subject.Year, @subject.Semester)
-                                    </option>
-                                }
-                            </select>
-                            <div class="form-text">Hold Ctrl/Cmd to select multiple subjects</div>
+                            <label class="form-label"><strong>Password</strong></label>
+                            <input type="password" class="form-control" id="facultyPassword" placeholder="Enter password" required>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                        <button type="submit" class="glass-btn">
-                            <i class="fas fa-save"></i> Add Faculty
-                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+                        <button type="submit" class="glass-btn">Add Faculty</button>
                     </div>
                 </form>
             </div>
@@ -475,244 +614,306 @@
     </div>
 
     <!-- Edit Faculty Modal -->
-    <div class="modal fade" id="editFacultyModal" tabindex="-1" aria-labelledby="editFacultyModalLabel" aria-hidden="true">
+    <div class="modal" id="editFacultyModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editFacultyModalLabel">
-                        <i class="fas fa-edit"></i> Edit Faculty
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5><i class="fas fa-user-edit"></i> Edit Faculty</h5>
                 </div>
-                <form id="editFacultyForm">
+                <form onsubmit="handleEditSubmit(event)">
                     <input type="hidden" id="editFacultyId">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="editFacultyName" class="form-label">Faculty Name</label>
+                            <label class="form-label"><strong>Full Name</strong></label>
                             <input type="text" class="form-control" id="editFacultyName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editFacultyEmail" class="form-label">Email Address</label>
+                            <label class="form-label"><strong>Email Address</strong></label>
                             <input type="email" class="form-control" id="editFacultyEmail" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editFacultyPassword" class="form-label">New Password (leave blank to keep current)</label>
-                            <input type="password" class="form-control" id="editFacultyPassword">
+                            <label class="form-label"><strong>New Password</strong> <small class="text-muted">(optional)</small></label>
+                            <input type="password" class="form-control" id="editFacultyPassword" placeholder="Leave blank to keep current password">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                        <button type="submit" class="glass-btn">
-                            <i class="fas fa-save"></i> Update Faculty
-                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                        <button type="submit" class="glass-btn">Update</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Subject Assignment Modal -->
-    <div class="modal fade" id="assignSubjectsModal" tabindex="-1" aria-labelledby="assignSubjectsModalLabel" aria-hidden="true">
+    <!-- Assign Subjects Modal -->
+    <div class="modal" id="assignModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="assignSubjectsModalLabel">
-                        <i class="fas fa-link"></i> Assign Subjects to Faculty
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 id="assignModalTitle"><i class="fas fa-link"></i> Assign Subjects</h5>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="assignFacultyId">
-                    <div id="subjectAssignmentContainer">
-                        <!-- Dynamic content will be loaded here -->
+                    <p class="text-muted mb-3">Select the subjects to assign to this faculty member:</p>
+                    <div id="subjectsContainer">
+                        @if (Model?.AvailableSubjects != null && Model.AvailableSubjects.Any())
+                        {
+                            @foreach (var subject in Model.AvailableSubjects)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input subject-check" type="checkbox" value="@subject.SubjectId" id="subj_@subject.SubjectId">
+                                    <label class="form-check-label" for="subj_@subject.SubjectId">
+                                        <strong>@subject.Name</strong> (Year @subject.Year @if (!string.IsNullOrEmpty(subject.Semester))
+                                        {<text>, @subject.Semester Semester</text>})
+                                    </label>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center">No subjects available. Please add subjects first.</p>
+                        }
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Close
-                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeAssignModal()">Close</button>
+                    <button type="button" class="glass-btn" onclick="saveAssignments()">Save Assignments</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
+        console.log('?? Faculty Management Page Loading...');
+
+        // Initialize DataTable
         $(document).ready(function() {
-            // Initialize DataTable
             $('#facultyTable').DataTable({
-                responsive: true,
                 pageLength: 10,
                 order: [[0, 'asc']],
                 language: {
-                    emptyTable: "No faculty found in the CSEDS department"
+                    emptyTable: "No faculty members found",
+                    zeroRecords: "No matching faculty members found"
                 }
             });
+            console.log('? DataTable Initialized');
         });
 
-        // Add Faculty Form Submission
-        document.getElementById('addFacultyForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const selectedSubjects = Array.from(document.getElementById('selectedSubjects').selectedOptions)
-                .map(option => parseInt(option.value));
+        // Utility function to show alerts
+        function showAlert(msg, type = 'success') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 99999; min-width: 300px;';
+            alert.innerHTML = `
+                <strong>${type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>'}</strong> ${msg}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 4000);
+        }
 
-            const formData = {
+        // Add Faculty Modal
+        function openAddModal() {
+            console.log('Opening Add Faculty Modal');
+            document.getElementById('facultyName').value = '';
+            document.getElementById('facultyEmail').value = '';
+            document.getElementById('facultyPassword').value = '';
+            document.getElementById('addFacultyModal').classList.add('show');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addFacultyModal').classList.remove('show');
+        }
+
+        async function handleAddSubmit(e) {
+            e.preventDefault();
+            const data = {
                 Name: document.getElementById('facultyName').value,
                 Email: document.getElementById('facultyEmail').value,
                 Password: document.getElementById('facultyPassword').value,
                 Department: 'CSEDS',
-                SelectedSubjectIds: selectedSubjects
+                SelectedSubjectIds: []
             };
 
             try {
-                const response = await fetch('@Url.Action("AddCSEDSFaculty", "Admin")', {
+                const res = await fetch('@Url.Action("AddCSEDSFaculty", "Admin")', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 });
-
-                const result = await response.json();
-                
+                const result = await res.json();
                 if (result.success) {
-                    showAlert('Faculty added successfully!', 'success');
-                    bootstrap.Modal.getInstance(document.getElementById('addFacultyModal')).hide();
-                    location.reload(); // Refresh to show new faculty
+                    showAlert('Faculty member added successfully!', 'success');
+                    closeAddModal();
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    showAlert('Error adding faculty: ' + (result.message || 'Unknown error'), 'danger');
+                    showAlert('Error: ' + result.message, 'danger');
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                showAlert('Error adding faculty. Please try again.', 'danger');
+            } catch (e) {
+                console.error('Add error:', e);
+                showAlert('Error adding faculty member!', 'danger');
             }
-        });
+        }
 
-        // Edit Faculty
-        function editFaculty(facultyId, name, email) {
-            document.getElementById('editFacultyId').value = facultyId;
+        // Edit Faculty Modal
+        function openEditModal(button) {
+            const id = button.getAttribute('data-faculty-id');
+            const name = button.getAttribute('data-faculty-name');
+            const email = button.getAttribute('data-faculty-email');
+            
+            console.log('Opening Edit Modal:', id, name, email);
+            
+            document.getElementById('editFacultyId').value = id;
             document.getElementById('editFacultyName').value = name;
             document.getElementById('editFacultyEmail').value = email;
             document.getElementById('editFacultyPassword').value = '';
-            
-            new bootstrap.Modal(document.getElementById('editFacultyModal')).show();
+            document.getElementById('editFacultyModal').classList.add('show');
         }
 
-        // Edit Faculty Form Submission
-        document.getElementById('editFacultyForm').addEventListener('submit', async function(e) {
+        function closeEditModal() {
+            document.getElementById('editFacultyModal').classList.remove('show');
+        }
+
+        async function handleEditSubmit(e) {
             e.preventDefault();
-            
-            const formData = {
+            const data = {
                 FacultyId: parseInt(document.getElementById('editFacultyId').value),
                 Name: document.getElementById('editFacultyName').value,
                 Email: document.getElementById('editFacultyEmail').value,
-                Password: document.getElementById('editFacultyPassword').value,
+                Password: document.getElementById('editFacultyPassword').value || null,
                 Department: 'CSEDS'
             };
 
             try {
-                const response = await fetch('@Url.Action("UpdateCSEDSFaculty", "Admin")', {
+                const res = await fetch('@Url.Action("UpdateCSEDSFaculty", "Admin")', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 });
-
-                const result = await response.json();
-                
+                const result = await res.json();
                 if (result.success) {
-                    showAlert('Faculty updated successfully!', 'success');
-                    bootstrap.Modal.getInstance(document.getElementById('editFacultyModal')).hide();
-                    location.reload(); // Refresh to show updated data
+                    showAlert('Faculty member updated successfully!', 'success');
+                    closeEditModal();
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    showAlert('Error updating faculty: ' + (result.message || 'Unknown error'), 'danger');
+                    showAlert('Error: ' + result.message, 'danger');
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                showAlert('Error updating faculty. Please try again.', 'danger');
+            } catch (e) {
+                console.error('Update error:', e);
+                showAlert('Error updating faculty member!', 'danger');
             }
-        });
+        }
 
-        // Assign Subjects to Faculty
-        async function assignSubjects(facultyId, facultyName) {
-            document.getElementById('assignFacultyId').value = facultyId;
-            document.getElementById('assignSubjectsModalLabel').innerHTML = 
-                `<i class="fas fa-link"></i> Assign Subjects to ${facultyName}`;
+        // Assign Subjects Modal
+        async function openAssignModal(button) {
+            const id = parseInt(button.getAttribute('data-faculty-id'));
+            const name = button.getAttribute('data-faculty-name');
             
-            // Load current assignments and available subjects
+            console.log('Opening Assign Modal:', id, name);
+            
+            document.getElementById('assignModalTitle').innerHTML = `<i class="fas fa-link"></i> Assign Subjects to ${name}`;
+            document.getElementById('assignFacultyId').value = id;
+            
+            // Uncheck all first
+            document.querySelectorAll('.subject-check').forEach(cb => cb.checked = false);
+
             try {
-                const response = await fetch(`@Url.Action("GetAvailableFacultyForSubject", "Admin")?subjectId=0`);
-                const data = await response.json();
-                
-                // This would need to be implemented to show current assignments
-                // For now, we'll show a simple message
-                document.getElementById('subjectAssignmentContainer').innerHTML = 
-                    '<p>Subject assignment functionality will be available in the Subject Management view.</p>';
-                
-                new bootstrap.Modal(document.getElementById('assignSubjectsModal')).show();
-            } catch (error) {
-                console.error('Error:', error);
-                showAlert('Error loading assignment data.', 'danger');
+                const res = await fetch('@Url.Action("GetDepartmentFaculty", "Admin")');
+                const data = await res.json();
+                if (data.success) {
+                    const fac = data.data.find(f => f.facultyId === id);
+                    if (fac?.assignedSubjects) {
+                        fac.assignedSubjects.forEach(s => {
+                            const cb = document.getElementById(`subj_${s.subjectId}`);
+                            if (cb) cb.checked = true;
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading assignments:', e);
+            }
+
+            document.getElementById('assignModal').classList.add('show');
+        }
+
+        function closeAssignModal() {
+            document.getElementById('assignModal').classList.remove('show');
+        }
+
+        async function saveAssignments() {
+            const facultyId = parseInt(document.getElementById('assignFacultyId').value);
+            const selected = Array.from(document.querySelectorAll('.subject-check:checked')).map(cb => parseInt(cb.value));
+
+            console.log('Saving assignments:', { facultyId, selected });
+
+            if (selected.length === 0) {
+                showAlert('Please select at least one subject', 'warning');
+                return;
+            }
+
+            let success = 0;
+            for (const subjectId of selected) {
+                try {
+                    const res = await fetch('@Url.Action("AssignFacultyToSubject", "Admin")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ SubjectId: subjectId, FacultyIds: [facultyId] })
+                    });
+                    const result = await res.json();
+                    if (result.success) success++;
+                } catch (e) {
+                    console.error('Assignment error:', e);
+                }
+            }
+
+            if (success > 0) {
+                showAlert(`Successfully assigned ${success} subject(s)!`, 'success');
+                closeAssignModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert('Error assigning subjects!', 'danger');
             }
         }
 
         // Delete Faculty
-        async function deleteFaculty(facultyId, facultyName) {
-            if (!confirm(`Are you sure you want to delete faculty member "${facultyName}"? This action cannot be undone.`)) {
-                return;
-            }
+        async function deleteFaculty(button) {
+            const id = parseInt(button.getAttribute('data-faculty-id'));
+            const name = button.getAttribute('data-faculty-name');
+            
+            if (!confirm(`Are you sure you want to delete ${name}?\n\nThis action cannot be undone.`)) return;
 
             try {
-                const response = await fetch('@Url.Action("DeleteCSEDSFaculty", "Admin")', {
+                const res = await fetch('@Url.Action("DeleteCSEDSFaculty", "Admin")', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ facultyId: facultyId })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ facultyId: id })
                 });
-
-                const result = await response.json();
-                
+                const result = await res.json();
                 if (result.success) {
-                    showAlert('Faculty deleted successfully!', 'success');
-                    location.reload(); // Refresh to remove deleted faculty
+                    showAlert('Faculty member deleted successfully!', 'success');
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    showAlert('Error deleting faculty: ' + (result.message || 'Unknown error'), 'danger');
+                    showAlert('Error: ' + result.message, 'danger');
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                showAlert('Error deleting faculty. Please try again.', 'danger');
+            } catch (e) {
+                console.error('Delete error:', e);
+                showAlert('Error deleting faculty member!', 'danger');
             }
         }
 
-        // Utility function to show alerts
-        function showAlert(message, type) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            // Insert at the top of the main container
-            document.querySelector('.main-container').insertBefore(alertDiv, document.querySelector('.page-header'));
-            
-            // Auto dismiss after 5 seconds
-            setTimeout(() => {
-                if (alertDiv && alertDiv.parentNode) {
-                    alertDiv.parentNode.removeChild(alertDiv);
-                }
-            }, 5000);
-        }
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal') && e.target.classList.contains('show')) {
+                e.target.classList.remove('show');
+            }
+        });
+
+        console.log('? Faculty Management Page Ready!');
     </script>
 </body>
 </html>

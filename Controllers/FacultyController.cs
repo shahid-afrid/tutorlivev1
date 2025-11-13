@@ -192,9 +192,12 @@ namespace TutorLiveMentor.Controllers
                     .Select(subj => subj.AssignedSubjectId)
                     .ToList();
 
-                // Get students enrolled in any of these assigned subjects
+                // Get students enrolled in any of these assigned subjects WITH enrollment data
                 students = _context.StudentEnrollments
                     .Include(se => se.Student)
+                        .ThenInclude(s => s.Enrollments)
+                            .ThenInclude(e => e.AssignedSubject)
+                                .ThenInclude(a => a.Subject)
                     .Include(se => se.AssignedSubject)
                         .ThenInclude(a => a.Subject)
                     .Where(se => assignedSubjectIds.Contains(se.AssignedSubjectId))

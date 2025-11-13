@@ -138,7 +138,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 0;
             padding-bottom: 15px;
             border-bottom: 2px solid var(--slate);
         }
@@ -173,25 +173,6 @@
             align-items: center;
             gap: 8px;
         }
-
-        .unenroll-btn {
-            background: linear-gradient(135deg, var(--error-red) 0%, #c0392b 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 12px 25px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-        }
-
-            .unenroll-btn:hover {
-                background: linear-gradient(135deg, #c0392b 0%, var(--error-red) 100%);
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
-            }
 
         .no-enrollments {
             background: rgba(249,250,242,0.95);
@@ -254,11 +235,6 @@
                 align-items: flex-start;
                 gap: 15px;
             }
-
-            .unenroll-btn {
-                width: 100%;
-                text-align: center;
-            }
         }
     </style>
 </head>
@@ -297,16 +273,12 @@
                                 <i class="fas fa-chalkboard-teacher"></i> Faculty: @enrollment.AssignedSubject.Faculty.Name
                             </div>
                             <div class="enrollment-stats">
-                                <i class="fas fa-user-graduate"></i> Students enrolled: @enrollment.AssignedSubject.SelectedCount / 60
+                                <i class="fas fa-user-graduate"></i> Students enrolled: @enrollment.AssignedSubject.SelectedCount / 70
+                            </div>
+                            <div class="enrollment-date" style="color: #888; margin-top: 8px;">
+                                <i class="fas fa-calendar-check"></i> Enrolled: @enrollment.EnrolledAt.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")
                             </div>
                         </div>
-
-                        <form asp-action="UnenrollSubject" method="post" style="display:inline;">
-                            <input type="hidden" name="assignedSubjectId" value="@enrollment.AssignedSubjectId" />
-                            <button type="submit" class="unenroll-btn" onclick="return confirm('Are you sure you want to unenroll from this subject?')">
-                                <i class="fas fa-times-circle"></i> Unenroll
-                            </button>
-                        </form>
                     </div>
                 </div>
             }

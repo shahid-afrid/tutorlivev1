@@ -111,8 +111,8 @@ namespace TutorLiveMentor.Models
         public List<int> AvailableYears { get; set; } = new List<int> { 1, 2, 3, 4 };
         public List<SemesterOption> AvailableSemesters { get; set; } = new List<SemesterOption>
         {
-            new SemesterOption { Value = "I", Text = "I (1)", NumericValue = 1 },
-            new SemesterOption { Value = "II", Text = "II (2)", NumericValue = 2 }
+            new SemesterOption { Value = "I", Text = "1 (I)", NumericValue = 1 },
+            new SemesterOption { Value = "II", Text = "2 (II)", NumericValue = 2 }
         };
         
         // For editing purposes
@@ -214,8 +214,8 @@ namespace TutorLiveMentor.Models
         public List<int> AvailableYears { get; set; } = new List<int> { 1, 2, 3, 4 };
         public List<SemesterOption> AvailableSemesters { get; set; } = new List<SemesterOption>
         {
-            new SemesterOption { Value = "I", Text = "I (1)", NumericValue = 1 },
-            new SemesterOption { Value = "II", Text = "II (2)", NumericValue = 2 }
+            new SemesterOption { Value = "I", Text = "1 (I)", NumericValue = 1 },
+            new SemesterOption { Value = "II", Text = "2 (II)", NumericValue = 2 }
         };
 
         // Report results
@@ -486,8 +486,8 @@ namespace TutorLiveMentor.Models
         public List<int> AvailableYears { get; set; } = new List<int> { 1, 2, 3, 4 };
         public List<SemesterOption> AvailableSemesters { get; set; } = new List<SemesterOption>
         {
-            new SemesterOption { Value = "I", Text = "I (1)", NumericValue = 1 },
-            new SemesterOption { Value = "II", Text = "II (2)", NumericValue = 2 }
+            new SemesterOption { Value = "I", Text = "1 (I)", NumericValue = 1 },
+            new SemesterOption { Value = "II", Text = "2 (II)", NumericValue = 2 }
         };
     }
 

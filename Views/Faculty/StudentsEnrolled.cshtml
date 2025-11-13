@@ -12,6 +12,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Students Enrolled - TutorLiveMentor</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
@@ -238,6 +239,103 @@
             box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.1);
         }
 
+        /* Column selector */
+        .column-selector {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--slate);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .column-selector h5 {
+            color: var(--royal-blue);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .columns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(249, 250, 242, 0.5);
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(111, 66, 193, 0.1);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            margin: 0;
+            font-weight: 500;
+            color: var(--royal-blue);
+        }
+
+        /* Export buttons */
+        .glass-btn {
+            background: linear-gradient(135deg, var(--faculty-purple) 0%, var(--warm-gold) 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 20px var(--card-shadow);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .glass-btn:hover {
+            background: linear-gradient(135deg, var(--warm-gold) 0%, var(--faculty-purple) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(111, 66, 193, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+
+        .glass-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-excel {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #dc3545, #fd7e14);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
         .students-table-card {
             background: rgba(249,250,242,0.95);
             border-radius: 20px;
@@ -400,6 +498,10 @@
                 display: inline-block;
                 margin-bottom: 10px;
             }
+
+            .btn-group {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -421,7 +523,7 @@
 
         <div class="filter-card">
             <form method="get" class="filter-form">
-                <label for="subject" class="filter-label"><i class="fas fa-filter"></i> Select Subject:</label>
+                <label for="subject" class="filter-label"><i class="fas fa-search"></i> Select Subject:</label>
                 <select id="subject" name="subject" onchange="this.form.submit()" class="form-control">
                     <option value="">-- Select Subject --</option>
                     @if (facultySubjects != null)
@@ -436,37 +538,89 @@
                     }
                 </select>
             </form>
+
+            @if (!string.IsNullOrEmpty(selectedSubject))
+            {
+                <!-- Column Selection -->
+                <div class="column-selector">
+                    <h5><i class="fas fa-columns"></i> Select Columns for Export</h5>
+                    <div class="columns-grid">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col_regdNumber" value="regdNumber" checked onchange="updateColumnVisibility()">
+                            <label for="col_regdNumber">Registration Number</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col_studentName" value="studentName" checked onchange="updateColumnVisibility()">
+                            <label for="col_studentName">Student Name</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col_email" value="email" checked onchange="updateColumnVisibility()">
+                            <label for="col_email">Email</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col_year" value="year" checked onchange="updateColumnVisibility()">
+                            <label for="col_year">Year</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col_department" value="department" checked onchange="updateColumnVisibility()">
+                            <label for="col_department">Department</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col_enrollmentTime" value="enrollmentTime" checked onchange="updateColumnVisibility()">
+                            <label for="col_enrollmentTime">Enrollment Time</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Buttons -->
+                <div class="btn-group">
+                    <button type="button" class="glass-btn" onclick="generateReport()">
+                        <i class="fas fa-sync-alt"></i> Load Report Data
+                    </button>
+                    <button type="button" class="glass-btn btn-excel" onclick="exportExcel()" id="exportExcelBtn" disabled>
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                    <button type="button" class="glass-btn btn-pdf" onclick="exportPDF()" id="exportPdfBtn" disabled>
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+            }
         </div>
 
         @if(enrolledStudents != null && enrolledStudents.Count > 0) {
             <div class="students-table-card">
                 <h4 class="table-title">
-                    <i class="fas fa-users"></i>
-                    Students enrolled in @selectedSubject 
+                    <i class="fas fa-users"></i> Students enrolled in @selectedSubject 
                     <span class="live-count" id="liveStudentCount">@enrolledStudents.Count</span>
                 </h4>
                 <div style="overflow-x: auto;">
                     <table class="table" id="studentsTable">
                         <thead>
                             <tr>
-                                <th><i class="fas fa-hashtag"></i> S.No</th>
-                                <th><i class="fas fa-user"></i> Student Name</th>
-                                <th><i class="fas fa-id-card"></i> Registration Number</th>
-                                <th><i class="fas fa-calendar"></i> Year</th>
-                                <th><i class="fas fa-building"></i> Department</th>
-                                <th><i class="fas fa-envelope"></i> Email</th>
+                                <th class="col-regdNumber"><i class="fas fa-id-badge"></i> Registration Number</th>
+                                <th class="col-studentName"><i class="fas fa-user"></i> Student Name</th>
+                                <th class="col-email"><i class="fas fa-envelope"></i> Email</th>
+                                <th class="col-year"><i class="fas fa-calendar-alt"></i> Year</th>
+                                <th class="col-department"><i class="fas fa-building"></i> Department</th>
+                                <th class="col-enrollmentTime"><i class="fas fa-clock"></i> Enrollment Time</th>
                             </tr>
                         </thead>
                         <tbody>
                             @{int serialNo = 1;}
                             @foreach(var student in enrolledStudents) {
+                                var enrollment = student.Enrollments?.FirstOrDefault(e => 
+                                    e.AssignedSubject != null && 
+                                    e.AssignedSubject.Subject != null && 
+                                    e.AssignedSubject.Subject.Name == selectedSubject);
+                                var enrollmentTime = enrollment?.EnrolledAt.ToLocalTime().ToString("MMM dd, yyyy hh:mm:ss.fff tt") ?? "N/A";
+                                
                                 <tr data-student-id="@student.Id">
-                                    <td>@serialNo</td>
-                                    <td>@student.FullName</td>
-                                    <td>@student.RegdNumber</td>
-                                    <td>@student.Year</td>
-                                    <td>@student.Department</td>
-                                    <td>@student.Email</td>
+                                    <td class="col-regdNumber">@student.RegdNumber</td>
+                                    <td class="col-studentName">@student.FullName</td>
+                                    <td class="col-email">@student.Email</td>
+                                    <td class="col-year">@student.Year</td>
+                                    <td class="col-department">@student.Department</td>
+                                    <td class="col-enrollmentTime">@enrollmentTime</td>
                                 </tr>
                                 serialNo++;
                             }
@@ -495,6 +649,197 @@
     </div>
 
     <script>
+        // 🚀 REPORT GENERATION VARIABLES
+        let currentReportData = [];
+        const selectedSubject = '@selectedSubject';
+
+        // Column visibility state
+        let visibleColumns = {
+            regdNumber: true,
+            studentName: true,
+            email: true,
+            year: true,
+            department: true,
+            enrollmentTime: true
+        };
+
+        function updateColumnVisibility() {
+            // Update visibility state
+            visibleColumns.regdNumber = document.getElementById('col_regdNumber').checked;
+            visibleColumns.studentName = document.getElementById('col_studentName').checked;
+            visibleColumns.email = document.getElementById('col_email').checked;
+            visibleColumns.year = document.getElementById('col_year').checked;
+            visibleColumns.department = document.getElementById('col_department').checked;
+            visibleColumns.enrollmentTime = document.getElementById('col_enrollmentTime').checked;
+
+            // Update table column visibility
+            const table = document.getElementById('studentsTable');
+            if (table) {
+                for (const [column, visible] of Object.entries(visibleColumns)) {
+                    const headers = table.querySelectorAll(`.col-${column}`);
+                    headers.forEach(header => {
+                        header.style.display = visible ? '' : 'none';
+                    });
+                }
+            }
+        }
+
+        async function generateReport() {
+            if (!selectedSubject) {
+                alert('Please select a subject first');
+                return;
+            }
+
+            try {
+                const response = await fetch('@Url.Action("GenerateFacultyReport", "FacultyReports")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ SubjectName: selectedSubject })
+                });
+
+                const result = await response.json();
+                console.log('Report data:', result);
+                
+                if (result.success) {
+                    currentReportData = result.data;
+                    document.getElementById('exportExcelBtn').disabled = false;
+                    document.getElementById('exportPdfBtn').disabled = false;
+                    alert(`Report loaded successfully! ${result.data.length} student(s) found.`);
+                } else {
+                    alert('Error generating report: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error generating report. Please try again.');
+            }
+        }
+
+        async function exportExcel() {
+            if (currentReportData.length === 0) {
+                alert('No data to export. Please load the report first.');
+                return;
+            }
+
+            try {
+                const exportBtn = document.getElementById('exportExcelBtn');
+                const originalText = exportBtn.innerHTML;
+                exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+                exportBtn.disabled = true;
+
+                const exportData = {
+                    SubjectName: selectedSubject,
+                    ReportData: currentReportData,
+                    SelectedColumns: {
+                        RegdNumber: visibleColumns.regdNumber,
+                        StudentName: visibleColumns.studentName,
+                        Email: visibleColumns.email,
+                        Year: visibleColumns.year,
+                        Department: visibleColumns.department,
+                        EnrollmentTime: visibleColumns.enrollmentTime
+                    }
+                };
+
+                const response = await fetch('@Url.Action("ExportFacultyReportExcel", "FacultyReports")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(exportData)
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `Students_Enrolled_${selectedSubject.replace(/ /g, '_')}_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const errorText = await response.text();
+                    console.error('Export failed:', errorText);
+                    alert('Failed to export Excel file: ' + errorText);
+                }
+
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Error exporting Excel file: ' + error.message);
+                
+                const exportBtn = document.getElementById('exportExcelBtn');
+                exportBtn.innerHTML = '<i class="fas fa-file-excel"></i> Export Excel';
+                exportBtn.disabled = false;
+            }
+        }
+
+        async function exportPDF() {
+            if (currentReportData.length === 0) {
+                alert('No data to export. Please load the report first.');
+                return;
+            }
+
+            try {
+                const exportBtn = document.getElementById('exportPdfBtn');
+                const originalText = exportBtn.innerHTML;
+                exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+                exportBtn.disabled = true;
+
+                const exportData = {
+                    SubjectName: selectedSubject,
+                    ReportData: currentReportData,
+                    SelectedColumns: {
+                        RegdNumber: visibleColumns.regdNumber,
+                        StudentName: visibleColumns.studentName,
+                        Email: visibleColumns.email,
+                        Year: visibleColumns.year,
+                        Department: visibleColumns.department,
+                        EnrollmentTime: visibleColumns.enrollmentTime
+                    }
+                };
+
+                const response = await fetch('@Url.Action("ExportFacultyReportPDF", "FacultyReports")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(exportData)
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `Students_Enrolled_${selectedSubject.replace(/ /g, '_')}_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const errorText = await response.text();
+                    console.error('Export failed:', errorText);
+                    alert('Failed to export PDF file: ' + errorText);
+                }
+
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Error exporting PDF file: ' + error.message);
+                
+                const exportBtn = document.getElementById('exportPdfBtn');
+                exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Export PDF';
+                exportBtn.disabled = false;
+            }
+        }
+
         // 🚀 SIGNALR REAL-TIME CONNECTION
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/selectionHub")
@@ -503,7 +848,6 @@
 
         // Connection status management
         const statusElement = document.getElementById('connectionStatus');
-        const selectedSubject = '@selectedSubject';
         
         connection.start().then(function () {
             console.log('🚀 SignalR Connected for Faculty!');
@@ -657,6 +1001,9 @@
                     showNotification('🚀 Faculty dashboard connected! You\'ll receive real-time enrollment notifications.', 'success');
                 }
             }, 2000);
+
+            // Initialize column visibility
+            updateColumnVisibility();
         });
 
         // CSS for pulse animation

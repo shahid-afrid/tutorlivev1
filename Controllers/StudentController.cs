@@ -177,9 +177,12 @@ namespace TutorLiveMentor.Controllers
             var isAvailable = schedule == null || schedule.IsCurrentlyAvailable;
             Console.WriteLine($"MainDashboard - Final IsSelectionAvailable: {isAvailable}");
 
-            // If we get here, student is logged in
+            // ? Set ALL ViewBag properties with student info
             ViewBag.StudentId = studentId;
             ViewBag.StudentName = student.FullName;
+            ViewBag.StudentRegdNumber = student.RegdNumber;  // ? Added
+            ViewBag.StudentYear = student.Year;              // ? Added
+            ViewBag.StudentDepartment = student.Department;  // ? Added
             ViewBag.IsSelectionAvailable = isAvailable;
             ViewBag.ScheduleMessage = schedule?.DisabledMessage ?? "";
             ViewBag.ScheduleStatus = schedule?.StatusDescription ?? "Always Available";
@@ -335,11 +338,11 @@ namespace TutorLiveMentor.Controllers
 
                     Console.WriteLine($"SelectSubject POST - Current enrollment count: {currentCount}");
 
-                    if (currentCount >= 30)
+                    if (currentCount >= 70)
                     {
-                        Console.WriteLine("SelectSubject POST - Subject is full (30 students)");
+                        Console.WriteLine("SelectSubject POST - Subject is full (70 students)");
                         await transaction.RollbackAsync();
-                        TempData["ErrorMessage"] = "This subject is already full (maximum 30 students). Someone enrolled just before you.";
+                        TempData["ErrorMessage"] = "This subject is already full (maximum 70 students). Someone enrolled just before you.";
                         return RedirectToAction("SelectSubject");
                     }
 
@@ -372,7 +375,7 @@ namespace TutorLiveMentor.Controllers
                     await _signalRService.NotifySubjectSelection(assignedSubject, student);
 
                     // Check if subject is now full and notify availability change
-                    if (assignedSubject.SelectedCount >= 30)
+                    if (assignedSubject.SelectedCount >= 70)
                     {
                         await _signalRService.NotifySubjectAvailability(
                             assignedSubject.Subject.Name, 
@@ -399,68 +402,11 @@ namespace TutorLiveMentor.Controllers
         [HttpPost]
         public async Task<IActionResult> UnenrollSubject(int assignedSubjectId)
         {
-            var studentId = HttpContext.Session.GetString("StudentId");
-            if (string.IsNullOrEmpty(studentId))
-            {
-                return RedirectToAction("Login");
-            }
-
-            var student = await _context.Students
-                .Include(s => s.Enrollments)
-                    .ThenInclude(e => e.AssignedSubject)
-                    .ThenInclude(a => a.Subject)
-                .Include(s => s.Enrollments)
-                    .ThenInclude(e => e.AssignedSubject)
-                    .ThenInclude(a => a.Faculty)
-                .FirstOrDefaultAsync(s => s.Id == studentId);
-
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            var enrollment = student.Enrollments.FirstOrDefault(e => e.AssignedSubjectId == assignedSubjectId);
-            if (enrollment == null)
-            {
-                TempData["ErrorMessage"] = "You are not enrolled in this subject.";
-                return RedirectToAction("SelectSubject");
-            }
-
-            var assignedSubject = await _context.AssignedSubjects
-                .Include(a => a.Subject)
-                .Include(a => a.Faculty)
-                .FirstOrDefaultAsync(a => a.AssignedSubjectId == assignedSubjectId);
-
-            if (assignedSubject != null)
-            {
-                var wasFullBefore = assignedSubject.SelectedCount >= 30;
-                assignedSubject.SelectedCount = Math.Max(0, assignedSubject.SelectedCount - 1);
-
-                // ?? REAL-TIME NOTIFICATION: Notify all connected users about the unenrollment
-                await _signalRService.NotifySubjectUnenrollment(assignedSubject, student);
-
-                // If subject was full and now has space, notify availability change
-                if (wasFullBefore && assignedSubject.SelectedCount < 30)
-                {
-                    await _signalRService.NotifySubjectAvailability(
-                        assignedSubject.Subject.Name, 
-                        assignedSubject.Year, 
-                        assignedSubject.Department, 
-                        true);
-                }
-            }
-
-            _context.StudentEnrollments.Remove(enrollment);
-
-            // Update selected subjects list
-            var remainingEnrollments = student.Enrollments.Where(e => e.AssignedSubjectId != assignedSubjectId).ToList();
-            var enrolledSubjects = remainingEnrollments.Select(e => e.AssignedSubject.Subject.Name).ToList();
-            student.SelectedSubject = enrolledSubjects.Any() ? string.Join(", ", enrolledSubjects.Distinct()) : "";
-
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = $"Successfully unenrolled from {assignedSubject?.Subject.Name}.";
-            return RedirectToAction("SelectSubject");
+            // UNENROLLMENT DISABLED - Strict 70-student limit enforcement
+            // Once a student enrolls, they cannot unenroll to maintain fairness
+            
+            TempData["ErrorMessage"] = "Unenrollment is not allowed. Once enrolled, you cannot change your selection. Please contact administration if you need assistance.";
+            return RedirectToAction("MySelectedSubjects");
         }
 
         [HttpGet]
@@ -599,7 +545,7 @@ namespace TutorLiveMentor.Controllers
                    .Include(a => a.Faculty)
                    .Where(a => a.Year == studentYear 
                             && a.Department == student.Department  // ADDED: Department filter
-                            && a.SelectedCount < 30)
+                            && a.SelectedCount < 70)
                    .ToListAsync();
 
                 Console.WriteLine($"SelectSubject GET - Found {availableSubjects.Count} subjects for Year={studentYear}, Department={student.Department}");

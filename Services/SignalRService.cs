@@ -31,7 +31,7 @@ namespace TutorLiveMentor.Services
                     FacultyName = assignedSubject.Faculty.Name,
                     StudentName = student.FullName,
                     Timestamp = DateTime.Now,
-                    IsFull = assignedSubject.SelectedCount >= 30,
+                    IsFull = assignedSubject.SelectedCount >= 70,
                     Message = $"{student.FullName} enrolled with {assignedSubject.Faculty.Name}"
                 };
 

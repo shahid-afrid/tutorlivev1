@@ -475,16 +475,15 @@
     <div class="main-container">
         <!-- Header Section -->
         <div class="dashboard-header">
-            <h1><i class="fas fa-chart-line"></i> CSEDS Department Dashboard</h1>
-            <p>Computer Science & Engineering - Data Science Department Administration</p>
+            <h1><i class="fas fa-chart-line"></i> CSE(Data Science) Department Dashboard</h1>
         </div>
 
         <!-- Welcome Section -->
         <div class="welcome-section">
-            <h4><i class="fas fa-user-shield"></i> Welcome, CSEDS Department Administrator!</h4>
+            <h4><i class="fas fa-user-shield"></i> Welcome, CSE(Data Science) Department Administrator!</h4>
             <p class="mb-0">
                 <strong>Email:</strong> @Model.AdminEmail | 
-                <strong>Department:</strong> @Model.AdminDepartment (Data Science)
+                <strong>Department:</strong> CSE(Data Science)
             </p>
         </div>
 
@@ -493,7 +492,7 @@
             <div class="stat-card">
                 <div class="stat-content">
                     <div class="stat-info">
-                        <h6>CSEDS Students</h6>
+                        <h6>CSE(DS) Students</h6>
                         <h3 class="stat-count" id="csedsStudentsCount">@Model.CSEDSStudentsCount</h3>
                     </div>
                     <i class="fas fa-graduation-cap stat-icon"></i>
@@ -503,7 +502,7 @@
             <div class="stat-card">
                 <div class="stat-content">
                     <div class="stat-info">
-                        <h6>CSEDS Faculty</h6>
+                        <h6>CSE(DS) Faculty</h6>
                         <h3 class="stat-count" id="csedsFacultyCount">@Model.CSEDSFacultyCount</h3>
                     </div>
                     <i class="fas fa-chalkboard-teacher stat-icon"></i>
@@ -537,7 +536,7 @@
             <div class="management-card faculty-card" onclick="window.location.href='@Url.Action("ManageCSEDSFaculty", "Admin")'">
                 <i class="fas fa-chalkboard-teacher management-icon"></i>
                 <div class="management-title">Faculty Management</div>
-                <div class="management-desc">Add, edit, and delete CSEDS faculty members. View all faculty with their assigned subjects and manage their information.</div>
+                <div class="management-desc">Add, edit, and delete CSE(DS) faculty members. View all faculty with their assigned subjects and manage their information.</div>
                 <button class="glass-btn">
                     <i class="fas fa-users"></i> Manage Faculty
                 </button>
@@ -557,7 +556,7 @@
             <div class="management-card students-card" onclick="window.location.href='@Url.Action("ManageCSEDSStudents", "Admin")'">
                 <i class="fas fa-user-graduate management-icon"></i>
                 <div class="management-title">Student Management</div>
-                <div class="management-desc">View and manage CSEDS student profiles and enrollments. Add new students and update their information.</div>
+                <div class="management-desc">View and manage CSE(DS) student profiles and enrollments. Add new students and update their information.</div>
                 <button class="glass-btn">
                     <i class="fas fa-graduation-cap"></i> Manage Students
                 </button>
@@ -594,79 +593,9 @@
             </div>
         </div>
 
-        <!-- Faculty Overview -->
-        @if(Model.DepartmentFaculty.Any())
-        {
-            <div class="overview-section">
-                <div class="overview-header">
-                    <h3 class="overview-title">
-                        <i class="fas fa-chalkboard-teacher"></i> Department Faculty (@Model.DepartmentFaculty.Count)
-                    </h3>
-                    <a href="@Url.Action("ManageCSEDSFaculty", "Admin")" class="glass-btn">
-                        <i class="fas fa-cog"></i> Manage All
-                    </a>
-                </div>
+       
                 
-                <div class="table-responsive">
-                    <table class="table overview-table" id="facultyOverviewTable">
-                        <thead>
-                            <tr>
-                                <th>Faculty Name</th>
-                                <th>Email</th>
-                                <th>Assigned Subjects</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var faculty in Model.DepartmentFaculty.Take(5))
-                            {
-                                <tr>
-                                    <td data-label="Faculty Name">
-                                        <strong>@faculty.Name</strong><br>
-                                        <span class="badge bg-primary">@faculty.Department</span>
-                                    </td>
-                                    <td data-label="Email">@faculty.Email</td>
-                                    <td data-label="Assigned Subjects">
-                                        @{
-                                            var assignedSubjects = Model.SubjectFacultyMappings
-                                                .Where(sfm => sfm.AssignedFaculty.Any(af => af.FacultyId == faculty.FacultyId))
-                                                .ToList();
-                                        }
-                                        @if (assignedSubjects.Any())
-                                        {
-                                            <div class="faculty-assignments">
-                                                @foreach (var subject in assignedSubjects)
-                                                {
-                                                    <span class="assignment-badge">@subject.SubjectName (Y@subject.Year)</span>
-                                                }
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">No assignments</span>
-                                        }
-                                    </td>
-                                    <td data-label="Actions">
-                                        <a href="@Url.Action("ManageCSEDSFaculty", "Admin")" class="btn btn-outline-primary btn-sm">
-                                            <i class="fas fa-edit"></i> Manage
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                
-                @if(Model.DepartmentFaculty.Count > 5)
-                {
-                    <div class="text-center mt-3">
-                        <a href="@Url.Action("ManageCSEDSFaculty", "Admin")" class="glass-btn">
-                            <i class="fas fa-eye"></i> View All @Model.DepartmentFaculty.Count Faculty
-                        </a>
-                    </div>
-                }
-            </div>
-        }
+              
 
         <!-- Subject-Faculty Mappings Overview -->
         @if(Model.SubjectFacultyMappings.Any())
@@ -741,40 +670,8 @@
             </div>
         }
 
-        <!-- Recent Activity Card -->
-        @if(Model.RecentStudents.Any() || Model.RecentEnrollments.Any())
-        {
-            <div class="activity-section">
-                <h3 class="overview-title" style="margin-bottom: 20px;">
-                    <i class="fas fa-clock"></i> Recent CSEDS Activity
-                </h3>
-                
-                @if(Model.RecentStudents.Any())
-                {
-                    <h6>Recent Students:</h6>
-                    @foreach(var student in Model.RecentStudents.Take(3))
-                    {
-                        <div class="activity-item">
-                            <h6><i class="fas fa-user-plus"></i> @student.FullName</h6>
-                            <small>@student.Email • Year @student.Year • @student.Department</small>
-                        </div>
-                    }
-                }
+        
 
-                @if(Model.RecentEnrollments.Any())
-                {
-                    <h6 style="margin-top: 20px;">Recent Enrollments:</h6>
-                    @foreach(var enrollment in Model.RecentEnrollments.Take(3))
-                    {
-                        <div class="activity-item">
-                            <h6><i class="fas fa-book"></i> @enrollment.StudentName ? @enrollment.SubjectName</h6>
-                            <small>Faculty: @enrollment.FacultyName</small>
-                        </div>
-                    }
-                }
-            </div>
-        }
-    </div>
 
     <!-- Logout Controls -->
     <div class="logout-controls">

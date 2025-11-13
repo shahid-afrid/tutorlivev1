@@ -231,9 +231,6 @@ namespace TutorLiveMentor10.Migrations
                     b.Property<DateTime>("EnrolledAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("StudentEnrollmentId")
-                        .HasColumnType("int");
-
                     b.HasKey("StudentId", "AssignedSubjectId");
 
                     b.HasIndex("AssignedSubjectId");
