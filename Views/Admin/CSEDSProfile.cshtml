@@ -87,6 +87,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
+            margin-bottom: 40px;
         }
 
         .profile-card {
@@ -148,6 +149,21 @@
         .form-control:read-only {
             background-color: #f8f9fa;
             cursor: not-allowed;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .form-control.is-invalid ~ .invalid-feedback {
+            display: block;
         }
 
         .glass-btn {
@@ -268,22 +284,44 @@
             border-left: 4px solid #dc3545;
         }
 
+        /* Modal Styles - Matching Add Faculty Design */
         .modal-content {
             border-radius: 20px;
             border: none;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
 
         .modal-header {
             background: linear-gradient(135deg, var(--cseds-purple), var(--cseds-teal));
             color: white;
-            border-radius: 20px 20px 0 0;
             border-bottom: none;
-            padding: 20px 30px;
+            padding: 25px 30px;
+        }
+
+        .modal-header .modal-title {
+            font-weight: 700;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-header .btn-close {
+            background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+            opacity: 1;
+            filter: brightness(0) invert(1);
         }
 
         .modal-body {
-            padding: 30px;
+            padding: 35px 30px;
+            background: white;
+        }
+
+        .modal-footer {
+            border-top: none;
+            padding: 0 30px 30px 30px;
+            background: white;
         }
 
         /* Responsive Design */
@@ -307,6 +345,10 @@
 
             .modal-body {
                 padding: 20px;
+            }
+
+            .modal-footer {
+                padding: 0 20px 20px 20px;
             }
         }
     </style>
@@ -414,7 +456,7 @@
                     <h5 class="modal-title" id="changePasswordModalLabel">
                         <i class="fas fa-lock"></i> Change Password
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="changePasswordForm">
@@ -422,30 +464,35 @@
                         <input type="hidden" id="adminEmail" value="@Model.Email" />
 
                         <div class="form-group">
-                            <label for="currentPassword" class="form-label">Current Password</label>
+                            <label for="currentPassword" class="form-label">
+                                <i class="fas fa-key"></i> Current Password
+                            </label>
                             <input type="password" id="currentPassword" name="CurrentPassword" class="form-control" required />
-                            <div class="invalid-feedback"></div>
+                            <div class="invalid-feedback">Current password is required</div>
                         </div>
 
                         <div class="form-group">
-                            <label for="newPassword" class="form-label">New Password</label>
+                            <label for="newPassword" class="form-label">
+                                <i class="fas fa-lock"></i> New Password
+                            </label>
                             <input type="password" id="newPassword" name="NewPassword" class="form-control" minlength="6" required />
-                            <div class="invalid-feedback"></div>
+                            <div class="invalid-feedback">Password must be at least 6 characters long</div>
                             <small class="text-muted">Password must be at least 6 characters long</small>
                         </div>
 
                         <div class="form-group">
-                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                            <label for="confirmPassword" class="form-label">
+                                <i class="fas fa-check-circle"></i> Confirm New Password
+                            </label>
                             <input type="password" id="confirmPassword" name="ConfirmPassword" class="form-control" required />
-                            <div class="invalid-feedback"></div>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="glass-btn">
-                                <i class="fas fa-save"></i> Change Password
-                            </button>
+                            <div class="invalid-feedback">Passwords must match</div>
                         </div>
                     </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="glass-btn" onclick="submitPasswordChange()">
+                        <i class="fas fa-save"></i> Change Password
+                    </button>
                 </div>
             </div>
         </div>
@@ -457,16 +504,14 @@
 
     <script>
         function openChangePasswordModal() {
-            new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+            const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+            modal.show();
         }
 
         // Change Password Form Submission
-        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
+        async function submitPasswordChange() {
             // Clear previous validation
             document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
 
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
@@ -476,23 +521,17 @@
             let isValid = true;
 
             if (!currentPassword) {
-                showFieldError('currentPassword', 'Current password is required');
+                document.getElementById('currentPassword').classList.add('is-invalid');
                 isValid = false;
             }
 
-            if (!newPassword) {
-                showFieldError('newPassword', 'New password is required');
-                isValid = false;
-            } else if (newPassword.length < 6) {
-                showFieldError('newPassword', 'Password must be at least 6 characters long');
+            if (!newPassword || newPassword.length < 6) {
+                document.getElementById('newPassword').classList.add('is-invalid');
                 isValid = false;
             }
 
-            if (!confirmPassword) {
-                showFieldError('confirmPassword', 'Please confirm your new password');
-                isValid = false;
-            } else if (newPassword !== confirmPassword) {
-                showFieldError('confirmPassword', 'New password and confirmation password do not match');
+            if (!confirmPassword || newPassword !== confirmPassword) {
+                document.getElementById('confirmPassword').classList.add('is-invalid');
                 isValid = false;
             }
 
@@ -518,7 +557,8 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                    modal.hide();
                     showAlert(result.message, 'success');
                     document.getElementById('changePasswordForm').reset();
                 } else {
@@ -528,24 +568,15 @@
                 console.error('Error:', error);
                 showAlert('Error changing password. Please try again.', 'danger');
             }
-        });
-
-        function showFieldError(fieldId, message) {
-            const field = document.getElementById(fieldId);
-            const feedback = field.nextElementSibling;
-            
-            field.classList.add('is-invalid');
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.textContent = message;
-            }
         }
 
         function showAlert(message, type) {
-            // Remove existing alerts
-            document.querySelectorAll('.alert').forEach(alert => {
-                if (!alert.closest('.main-container')) return;
-                alert.remove();
-            });
+            // Remove existing alerts in modal
+            const existingAlerts = document.querySelectorAll('.modal-body .alert');
+            existingAlerts.forEach(alert => alert.remove());
+
+            // Remove existing alerts in main container
+            document.querySelectorAll('.main-container > .alert').forEach(alert => alert.remove());
 
             const alertHtml = `
                 <div class="alert alert-${type}" role="alert">
@@ -557,6 +588,9 @@
             const header = container.querySelector('.profile-header');
             header.insertAdjacentHTML('afterend', alertHtml);
 
+            // Scroll to top to show alert
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             // Auto-remove after 5 seconds
             setTimeout(() => {
                 const alert = container.querySelector('.alert');
@@ -564,17 +598,15 @@
             }, 5000);
         }
 
-        // Password confirmation validation
+        // Real-time password confirmation validation
         document.getElementById('confirmPassword').addEventListener('input', function() {
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = this.value;
             
             if (confirmPassword && newPassword !== confirmPassword) {
                 this.classList.add('is-invalid');
-                this.nextElementSibling.textContent = 'Passwords do not match';
             } else {
                 this.classList.remove('is-invalid');
-                this.nextElementSibling.textContent = '';
             }
         });
 
@@ -582,7 +614,14 @@
         document.getElementById('changePasswordModal').addEventListener('hidden.bs.modal', function() {
             document.getElementById('changePasswordForm').reset();
             document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        });
+
+        // Handle Enter key in modal form
+        document.getElementById('changePasswordForm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitPasswordChange();
+            }
         });
     </script>
 </body>
