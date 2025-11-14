@@ -55,7 +55,7 @@
             z-index: 1;
             max-width: 1000px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 20px 40px 20px;
         }
 
         .profile-header {
@@ -87,7 +87,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
-            margin-bottom: 30px;
         }
 
         .profile-card {
@@ -143,6 +142,12 @@
         .form-control:focus {
             border-color: var(--cseds-purple);
             box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+            outline: none;
+        }
+
+        .form-control:read-only {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
         }
 
         .glass-btn {
@@ -171,6 +176,10 @@
             box-shadow: 0 8px 25px rgba(111, 66, 193, 0.4);
             text-decoration: none;
             color: white;
+        }
+
+        .glass-btn:active {
+            transform: translateY(0);
         }
 
         .back-btn {
@@ -206,6 +215,7 @@
 
         .info-item:last-child {
             border-bottom: none;
+            padding-bottom: 0;
         }
 
         .info-label {
@@ -232,6 +242,18 @@
             border: none;
             padding: 15px 20px;
             margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .alert-success {
@@ -244,6 +266,24 @@
             background: rgba(220, 53, 69, 0.1);
             color: #721c24;
             border-left: 4px solid #dc3545;
+        }
+
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--cseds-purple), var(--cseds-teal));
+            color: white;
+            border-radius: 20px 20px 0 0;
+            border-bottom: none;
+            padding: 20px 30px;
+        }
+
+        .modal-body {
+            padding: 30px;
         }
 
         /* Responsive Design */
@@ -262,6 +302,10 @@
             }
 
             .profile-card {
+                padding: 20px;
+            }
+
+            .modal-body {
                 padding: 20px;
             }
         }
@@ -365,14 +409,14 @@
     <!-- Change Password Modal -->
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border-radius: 20px; border: none;">
-                <div class="modal-header" style="background: linear-gradient(135deg, var(--cseds-purple), var(--cseds-teal)); color: white; border-radius: 20px 20px 0 0;">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h5 class="modal-title" id="changePasswordModalLabel">
                         <i class="fas fa-lock"></i> Change Password
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" style="padding: 30px;">
+                <div class="modal-body">
                     <form id="changePasswordForm">
                         <input type="hidden" id="adminId" value="@Model.AdminId" />
                         <input type="hidden" id="adminEmail" value="@Model.Email" />
